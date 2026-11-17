@@ -3,6 +3,7 @@ import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } f
 import { Download, RotateCcw } from "lucide-react";
 import * as S from "@/lib/hisim";
 import { toolsText, type ToolLang } from "@/lib/i18n/tools";
+const getT = (l: ToolLang) => toolsText[l].sim;
 
 const W = 960, H = 480;
 const DEFAULTS = { beam: S.beamFromDish(S.DISH_ARGH, S.K_DEFAULT), step: 2, noise: 3, k: S.K_DEFAULT, eta: 0.55, tau: 10 };
@@ -72,6 +73,55 @@ function Slider({ id, label, hint, value, min, max, stp, set, fmt }: { id: strin
       <input id={id} type="range" min={min} max={max} step={stp} value={value} onChange={(e) => set(+e.target.value)} />
       {hint && <small>{hint}</small>}
     </div>
+  );
+}
+
+const PERSON = 1.75;
+
+/** Sagoma di una persona e parabola (vista frontale) in scala reale; 1 unità = 1 m. */
+function ScaleView({ D, loc, T }: { D: number; loc: string; T: ReturnType<typeof getT> }) {
+  const A = S.DISH_ARGH, both = Math.abs(D - A) > 0.05;
+  const items = both ? [A, D] : [D];
+  const x0 = -0.7; let cursor = 0.9;
+  const pos = items.map((d) => { const cx = cursor + d / 2; cursor = cx + d / 2 + 0.7; return cx; });
+  const maxD = Math.max(...items), tall = Math.max(PERSON + 0.2, maxD + 0.9);
+  const totalW = cursor - x0, mb = Math.max(totalW, tall) * 0.03, totalH = tall + 0.25 + mb;
+  const top = -(tall + 0.25);
+  const y = (v: number) => -v; // sale verso l'alto
+  const name = (d: number, i: number) => (both && i === 0 ? T.scale.argh(nf(S.DISH_ARGH, 1, loc)) : T.scale.chosen(nf(d, 1, loc)));
+  return (
+    <section className="sim-scale">
+      <h3>{T.scale.title}</h3>
+      <svg viewBox={`${x0} ${top} ${totalW} ${totalH}`} role="img" aria-label={T.scale.alt} preserveAspectRatio="xMidYMax meet">
+        <defs><radialGradient id="dishg" cx=".5" cy=".5" r=".5"><stop offset="0" stopColor="#8b6cff" stopOpacity=".55" /><stop offset="1" stopColor="#29b6f6" stopOpacity=".25" /></radialGradient></defs>
+        <line x1={x0} x2={x0 + totalW} y1={0} y2={0} stroke="#1c2547" strokeWidth={2} vectorEffect="non-scaling-stroke" />
+        {/* persona */}
+        <g fill="#e9eefc">
+          <circle cx={0} cy={y(1.62)} r={0.11} />
+          <rect x={-0.21} y={y(1.5)} width={0.42} height={0.62} rx={0.1} />
+          <rect x={-0.3} y={y(1.45)} width={0.08} height={0.6} rx={0.04} /><rect x={0.22} y={y(1.45)} width={0.08} height={0.6} rx={0.04} />
+          <rect x={-0.17} y={y(0.9)} width={0.15} height={0.9} rx={0.05} /><rect x={0.02} y={y(0.9)} width={0.15} height={0.9} rx={0.05} />
+        </g>
+        {/* parabole */}
+        {items.map((d, i) => {
+          const cx = pos[i], cy = d / 2 + 0.9, r = d / 2, ghost = both && i === 0;
+          return (
+            <g key={i} opacity={ghost ? 0.75 : 1}>
+              <rect x={cx - Math.max(0.05, d * 0.015)} y={y(cy)} width={Math.max(0.1, d * 0.03)} height={cy} fill="#3a4672" />
+              <circle cx={cx} cy={y(cy)} r={r} fill="url(#dishg)" stroke={ghost ? "#9aa7c7" : "#29b6f6"} strokeWidth={2} strokeDasharray={ghost ? "6 4" : undefined} vectorEffect="non-scaling-stroke" />
+              <circle cx={cx} cy={y(cy)} r={r * 0.5} fill="none" stroke="#29b6f6" strokeOpacity={0.35} strokeWidth={1} vectorEffect="non-scaling-stroke" />
+              {[0, 1, 2, 3, 4, 5, 6, 7].map((k) => <line key={k} x1={cx} y1={y(cy)} x2={cx + r * Math.cos((k * Math.PI) / 4)} y2={y(cy) + r * Math.sin((k * Math.PI) / 4)} stroke="#29b6f6" strokeOpacity={0.25} strokeWidth={1} vectorEffect="non-scaling-stroke" />)}
+              <circle cx={cx} cy={y(cy)} r={Math.max(0.05, r * 0.04)} fill="#fff" />
+            </g>
+          );
+        })}
+      </svg>
+      <ul className="sim-legend">
+        <li><i style={{ background: "#e9eefc" }} />{T.scale.person}</li>
+        {items.map((d, i) => <li key={i}><i className={both && i === 0 ? "ghost" : ""} />{name(d, i)}</li>)}
+      </ul>
+      <p>{T.scale.times(nf(D / PERSON, 1, loc), nf(Math.PI * (D / 2) ** 2, D < 10 ? 1 : 0, loc))}</p>
+    </section>
   );
 }
 
@@ -256,6 +306,8 @@ export function HiSimulator({ lang }: { lang: ToolLang }) {
           </dl>
         </section>
       </div>
+
+      <ScaleView D={dishEq} loc={loc} T={T} />
 
       <ul className="sim-facts">{facts.map((f) => <li key={f}>{f}</li>)}</ul>
     </div>

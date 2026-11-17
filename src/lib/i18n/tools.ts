@@ -84,6 +84,11 @@ export const toolsText = {
       loading: "Carico la mappa…",
       sampling: "Campionamento",
       mwDescEq: "Mappa HI all-sky (HI4PI) riproiettata in coordinate equatoriali (α, δ): la Via Lattea è la fascia curva che attraversa la mappa; le Nubi di Magellano sono in basso a destra.",
+      scale: {
+        title: "A scala umana", person: "Persona 1,75 m", argh: (d: string) => `ARGH ${d} m`, chosen: (d: string) => `Parabola ${d} m`,
+        times: (t: string, a: string) => `Una parabola da questo diametro è alta ${t} volte una persona e raccoglie il segnale su circa ${a} m² (area geometrica, prima delle perdite).`,
+        alt: "Confronto di scala tra una persona e la parabola",
+      },
       mode: "Modalità",
       modes: { grid: "Parabola motorizzata", drift: "Parabola ferma (drift)" },
       driftDesc: "La parabola resta ferma, puntata al meridiano a una certa elevazione. La rotazione terrestre fa scorrere il cielo nel fascio a ~15°/ora: ogni giorno viene misurata una striscia a declinazione costante. Poi si inclina la parabola di qualche grado e si ripete.",
@@ -182,6 +187,11 @@ export const toolsText = {
       loading: "Loading the map…",
       sampling: "Sampling",
       mwDescEq: "All-sky HI map (HI4PI) reprojected to equatorial coordinates (α, δ): the Milky Way is the curved band crossing the map; the Magellanic Clouds are at lower right.",
+      scale: {
+        title: "Human scale", person: "Person 1.75 m", argh: (d: string) => `ARGH ${d} m`, chosen: (d: string) => `Dish ${d} m`,
+        times: (t: string, a: string) => `A dish of this diameter is ${t} times a person's height and collects signal over about ${a} m² (geometric area, before losses).`,
+        alt: "Scale comparison between a person and the dish",
+      },
       mode: "Mode",
       modes: { grid: "Motorised dish", drift: "Fixed dish (drift)" },
       driftDesc: "The dish stays fixed, pointed at the meridian at some elevation. Earth's rotation sweeps the sky through the beam at ~15°/hour: each day measures one strip at constant declination. Then you tilt the dish by a few degrees and repeat.",
