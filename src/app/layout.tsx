@@ -31,7 +31,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const { lang, t } = await getContent();
   return (
-    <html lang={lang}>
+    <html lang={lang} data-scroll-behavior="smooth">
       <body>
         {children}
         <CookieBanner {...t.legal.banner} />

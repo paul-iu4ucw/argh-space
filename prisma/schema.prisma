@@ -8,12 +8,12 @@ datasource db {
 }
 
 model Section {
-  id       Int    @id @default(autoincrement())
+  id       Int     @id @default(autoincrement())
   title    String
-  slug     String @unique
-  position Int    @default(0)
-  icon     String @default("book")
-  lang     String @default("it") // "it" | "en"
+  slug     String  @unique
+  position Int     @default(0)
+  icon     String  @default("book")
+  lang     String  @default("it") // "it" | "en"
   key      String? // stesso valore nelle traduzioni dello stesso gruppo
   pages    Page[]
 
@@ -21,17 +21,82 @@ model Section {
 }
 
 model Page {
-  id        Int      @id @default(autoincrement())
-  sectionId Int      @map("section_id")
-  section   Section  @relation(fields: [sectionId], references: [id], onDelete: Cascade)
-  title     String
-  slug      String
-  content   String   @default("")
-  position  Int      @default(0)
-  published Boolean  @default(true)
-  key       String? // stesso valore nelle traduzioni della stessa pagina
-  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+  id              Int       @id @default(autoincrement())
+  sectionId       Int       @map("section_id")
+  section         Section   @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  title           String
+  slug            String
+  content         String    @default("")
+  position        Int       @default(0)
+  published       Boolean   @default(true)
+  key             String? // stesso valore nelle traduzioni della stessa pagina
+  commentsEnabled Boolean   @default(false) @map("comments_enabled")
+  comments        Comment[]
+  updatedAt       DateTime  @default(now()) @updatedAt @map("updated_at")
 
   @@unique([sectionId, slug])
   @@map("pages")
+}
+
+model User {
+  id              Int       @id @default(autoincrement())
+  name            String
+  email           String    @unique
+  passwordHash    String    @map("password_hash")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  emailVerifiedAt DateTime? @map("email_verified_at")
+  verifyHash      String?   @unique @map("verify_hash") // sha256 del token inviato per email
+  verifyExpires   DateTime? @map("verify_expires")
+  verifySentAt    DateTime? @map("verify_sent_at")
+  privacyAcceptedAt DateTime? @map("privacy_accepted_at") // accettazione dell'informativa
+  role              String?   // chi sei: student, teacher, ham, enthusiast, researcher, other
+  institute         String?   // solo per gli studenti: scuola o università (testo libero)
+  callsign          String?   // solo radioamatori: nominativo (es. IU4UCW)
+  club              String?   // solo radioamatori: sede/sezione di appartenenza (es. IQ4RE), facoltativa
+  country           String?   // codice ISO 3166-1 alpha-2 (facoltativo)
+  locale            String    @default("it") // lingua preferita: it | en (email e interfaccia)
+  sessionVersion    Int      @default(0) @map("session_version") // si incrementa a ogni cambio/reset password: chiude le altre sessioni
+  resetHash         String?   @unique @map("reset_hash") // recupero password: sha256 del token inviato per email
+  resetExpires      DateTime? @map("reset_expires")
+  resetSentAt       DateTime? @map("reset_sent_at")
+  newEmail          String?   @map("new_email") // cambio email in attesa di conferma
+  newEmailHash      String?   @unique @map("new_email_hash")
+  newEmailExpires   DateTime? @map("new_email_expires")
+  deleteAt          DateTime? @map("delete_at") // eliminazione richiesta: l'account sparisce a questa data, se non rientra prima
+  mailConsent    Boolean   @default(false) @map("mail_consent") // consenso a email su eventi e pubblicazioni
+  mailConsentAt   DateTime? @map("mail_consent_at")
+  totpSecret      String?   @map("totp_secret") // cifrato
+  totpEnabled     Boolean   @default(false) @map("totp_enabled")
+  totpRecovery    String[]  @default([]) @map("totp_recovery") // hash dei codici di recupero
+  totpLastStep    Int       @default(0) @map("totp_last_step")
+  totpFails       Int       @default(0) @map("totp_fails")
+  totpLockUntil   DateTime? @map("totp_lock_until")
+  comments        Comment[]
+
+  @@map("users")
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  pageId    Int      @map("page_id")
+  page      Page     @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  userId    Int      @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  block     Int // indice del blocco (paragrafo, titolo, elenco…) a cui si riferisce
+  quote     String   @default("") // testo selezionato
+  body      String
+  // pending: solo l'autore (e l'admin) lo vede · approved: visibile a tutti · accepted: preso in carico/corretto, visibile solo all'autore
+  status    String   @default("pending")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([pageId, block])
+  @@index([status])
+  @@map("comments")
+}
+
+model Setting {
+  key   String @id
+  value String
+
+  @@map("settings")
 }

@@ -4,8 +4,9 @@ import { revalidatePath } from "next/cache";
 import { checkCredentials, createSession, destroySession, isAdmin } from "./auth";
 import { prisma, slugify } from "./db";
 import { clean, toHtml } from "./content";
+import { adminStore, adminTwoFaEnabled, checkCode, clearPending, readPending, setPending } from "./twofa";
 
-const RESERVED = ["admin", "wiki", "api", "privacy", "cookie", "login", "strumenti", "tools"];
+const RESERVED = ["admin", "wiki", "api", "privacy", "cookie", "login", "strumenti", "tools", "account"];
 
 async function guard() { if (!(await isAdmin())) redirect("/admin/login"); }
 const str = (f: FormData, k: string) => String(f.get(k) ?? "").trim();
@@ -13,9 +14,23 @@ const num = (f: FormData, k: string) => Number(f.get(k)) || 0;
 const lang = (f: FormData) => (str(f, "lang") === "en" ? "en" : "it");
 const refresh = () => { revalidatePath("/wiki", "layout"); revalidatePath("/admin", "layout"); };
 
-export async function login(_: string | null, f: FormData) {
+export type LoginState = { error?: string; step?: "code" } | null;
+export async function login(_: LoginState, f: FormData): Promise<LoginState> {
   await new Promise((r) => setTimeout(r, 600)); // rallenta i tentativi
-  if (!checkCredentials(str(f, "user"), String(f.get("pass") ?? ""))) return "Credenziali non valide";
+  if (!checkCredentials(str(f, "user"), String(f.get("pass") ?? ""))) return { error: "Credenziali non valide" };
+  if (await adminTwoFaEnabled()) { await setPending("admin"); return { step: "code" }; }
+  await createSession();
+  redirect("/admin");
+}
+/** Secondo passo del login admin con 2FA attivo. */
+export async function loginCode(_: LoginState, f: FormData): Promise<LoginState> {
+  await new Promise((r) => setTimeout(r, 600));
+  const p = await readPending();
+  if (!p || p.kind !== "admin") return { error: "Sessione scaduta, ricomincia" };
+  const r = await checkCode(adminStore, String(f.get("code") ?? ""));
+  if (r === "locked") return { step: "code", error: "Troppi tentativi: riprova tra 15 minuti" };
+  if (r !== "ok") return { step: "code", error: "Codice non corretto" };
+  await clearPending();
   await createSession();
   redirect("/admin");
 }
@@ -26,10 +41,31 @@ export async function createSection(f: FormData) {
   const title = str(f, "title"); if (!title) return;
   let slug = slugify(title); if (RESERVED.includes(slug)) slug += "-1";
   const max = await prisma.section.aggregate({ _max: { position: true } });
+  let id: number;
   try {
-    await prisma.section.create({ data: { title, slug, position: (max._max.position ?? 0) + 1, icon: str(f, "icon") || "book", lang: lang(f), key: str(f, "key") || null } });
-  } catch { /* slug già esistente */ }
+    // nasce in italiano; la key collega la futura versione inglese
+    id = (await prisma.section.create({ data: { title, slug, position: (max._max.position ?? 0) + 1, icon: str(f, "icon") || "book", lang: "it", key: str(f, "key") || slug } })).id;
+  } catch { return; /* slug già esistente */ }
   refresh();
+  redirect(`/admin/wiki/${id}`);
+}
+/** Crea la versione nell'altra lingua dello stesso sotto menu (stessa key). */
+export async function createTranslation(f: FormData) {
+  await guard();
+  const src = await prisma.section.findUnique({ where: { id: num(f, "id") } });
+  const title = str(f, "title");
+  if (!src || !title) return;
+  const lang = src.lang === "it" ? "en" : "it";
+  const key = src.key ?? src.slug;
+  let slug = slugify(title); if (RESERVED.includes(slug)) slug += "-1";
+  if (await prisma.section.findUnique({ where: { slug } })) slug += `-${lang}`;
+  let id: number;
+  try {
+    if (!src.key) await prisma.section.update({ where: { id: src.id }, data: { key } });
+    id = (await prisma.section.create({ data: { title, slug, icon: src.icon, lang, key, position: src.position } })).id;
+  } catch { return; }
+  refresh();
+  redirect(`/admin/wiki/${id}`);
 }
 export async function renameSection(f: FormData) {
   await guard();
@@ -41,6 +77,7 @@ export async function deleteSection(f: FormData) {
   await guard();
   await prisma.section.delete({ where: { id: num(f, "id") } }).catch(() => {});
   refresh();
+  redirect("/admin/wiki");
 }
 export async function createPage(f: FormData) {
   await guard();
@@ -62,7 +99,7 @@ export async function savePage(f: FormData) {
       where: { id },
       data: {
         title, slug: slugify(str(f, "slug") || title), content: clean(toHtml(String(f.get("content") ?? ""))),
-        published: !!f.get("published"), position: num(f, "position"), key: str(f, "key") || null,
+        published: !!f.get("published"), commentsEnabled: !!f.get("comments"), position: num(f, "position"), key: str(f, "key") || null,
       },
     });
   } catch { redirect(`/admin/page/${id}?err=slug`); }
@@ -73,7 +110,7 @@ export async function deletePage(f: FormData) {
   await guard();
   await prisma.page.delete({ where: { id: num(f, "id") } }).catch(() => {});
   refresh();
-  redirect("/admin");
+  redirect("/admin/wiki");
 }
 
 // --- ordinamento e stato ---
@@ -88,9 +125,18 @@ export async function moveSection(f: FormData) {
   await guard();
   const cur = await prisma.section.findUnique({ where: { id: num(f, "id") }, select: { lang: true } });
   if (!cur) return;
-  // l'ordine è per lingua: si scambia solo tra gruppi della stessa lingua
-  const list = swap(await prisma.section.findMany({ where: { lang: cur.lang }, orderBy: [{ position: "asc" }, { title: "asc" }], select: { id: true } }), num(f, "id"), dirOf(f));
-  if (list) await prisma.$transaction(list.map((x, k) => prisma.section.update({ where: { id: x.id }, data: { position: k + 1 } })));
+  // si riordina nella lingua del gruppo; la lingua opposta ne segue l'ordine (stessa key)
+  const base = await prisma.section.findMany({ where: { lang: cur.lang }, orderBy: [{ position: "asc" }, { title: "asc" }], select: { id: true, key: true } });
+  const list = swap(base, num(f, "id"), dirOf(f));
+  if (list) {
+    const rank = new Map(list.map((x, k) => [x.key, k] as const));
+    const others = await prisma.section.findMany({ where: { lang: { not: cur.lang } }, orderBy: [{ position: "asc" }, { title: "asc" }], select: { id: true, key: true } });
+    const sorted = [...others].sort((a, b) => (rank.get(a.key) ?? 1e6) - (rank.get(b.key) ?? 1e6));
+    await prisma.$transaction([
+      ...list.map((x, k) => prisma.section.update({ where: { id: x.id }, data: { position: k + 1 } })),
+      ...sorted.map((x, k) => prisma.section.update({ where: { id: x.id }, data: { position: k + 1 } })),
+    ]);
+  }
   refresh();
 }
 export async function movePage(f: FormData) {
@@ -108,4 +154,42 @@ export async function togglePublished(f: FormData) {
   const pg = await prisma.page.findUnique({ where: { id: num(f, "id") } });
   if (pg) await prisma.page.update({ where: { id: pg.id }, data: { published: !pg.published, updatedAt: pg.updatedAt } });
   refresh();
+}
+
+// --- utenti e commenti ---
+const revUsers = () => { revalidatePath("/admin", "layout"); revalidatePath("/wiki", "layout"); };
+export async function adminDeleteComment(f: FormData) {
+  await guard();
+  await prisma.comment.delete({ where: { id: num(f, "id") } }).catch(() => {});
+  revUsers();
+}
+/** pending = in attesa · approved = pubblico · accepted = preso in carico/corretto, visibile solo all'autore */
+export async function setCommentStatus(f: FormData) {
+  await guard();
+  const status = str(f, "status");
+  if (!["pending", "approved", "accepted"].includes(status)) return;
+  await prisma.comment.update({ where: { id: num(f, "id") }, data: { status } }).catch(() => {});
+  revUsers();
+}
+export async function adminDeleteUser(f: FormData) {
+  await guard();
+  await prisma.user.delete({ where: { id: num(f, "id") } }).catch(() => {});
+  revUsers();
+}
+/** L'admin ferma il conto alla rovescia di un account in eliminazione. */
+export async function adminCancelDeletion(f: FormData) {
+  await guard();
+  await prisma.user.update({ where: { id: num(f, "id") }, data: { deleteAt: null } }).catch(() => {});
+  revUsers();
+}
+export async function adminVerifyUser(f: FormData) {
+  await guard();
+  await prisma.user.update({ where: { id: num(f, "id") }, data: { emailVerifiedAt: new Date(), verifyHash: null, verifyExpires: null } }).catch(() => {});
+  revUsers();
+}
+/** Soccorso per chi ha perso telefono e codici di recupero. */
+export async function adminResetUser2fa(f: FormData) {
+  await guard();
+  await prisma.user.update({ where: { id: num(f, "id") }, data: { totpEnabled: false, totpSecret: null, totpRecovery: [], totpLastStep: 0, totpFails: 0, totpLockUntil: null } }).catch(() => {});
+  revUsers();
 }

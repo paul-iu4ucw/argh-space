@@ -152,7 +152,7 @@ const it = {
   simulator: { eyebrow: "Strumenti", title: "Provalo: quanto vede una parabola?", text: "Cambia il diametro della parabola, il passo di scansione e il rumore e guarda come cambia la mappa dell'idrogeno neutro a 21 cm.", cta: "Apri il simulatore" },
   banner: { title: "Documentazione, guide e novità", text: "Tutto il materiale tecnico e didattico del progetto vive nella wiki.", cta: "Apri wiki.argh.space" },
   legal: {
-    updated: "Ultimo aggiornamento: 5 novembre 2026",
+    updated: "Ultimo aggiornamento: 17 novembre 2026",
     back: "← Torna alla home",
     footer: { privacy: "Privacy", cookies: "Cookie" },
     banner: {
@@ -166,9 +166,12 @@ const it = {
       intro: "Questa informativa descrive come vengono trattati i dati personali degli utenti che visitano il sito argh.space e la wiki wiki.argh.space, ai sensi degli artt. 13 e 14 del Regolamento (UE) 2016/679 (GDPR).",
       sections: [
         { h: "1. Titolare del trattamento", p: ["Il titolare del trattamento è Paolo Marzi, responsabile del progetto A.R.G.H. – Astronomical Radio Ground Hub, Reggio Emilia (Italia). Per qualsiasi richiesta relativa ai dati personali puoi scrivere a info@argh.space."], ul: [] },
-        { h: "2. Quali dati trattiamo", p: ["Il sito non richiede registrazione e non contiene moduli di raccolta dati. Trattiamo soltanto:"], ul: [
+        { h: "2. Quali dati trattiamo", p: ["La consultazione del sito e della wiki non richiede registrazione. Una registrazione facoltativa serve a lasciare commenti sulle pagine della wiki. Trattiamo:"], ul: [
           "Dati di navigazione: indirizzo IP, data e ora della richiesta, pagina richiesta, tipo di browser e sistema operativo. Sono registrati automaticamente dai server che ospitano il sito.",
           "Dati forniti volontariamente: se ci scrivi via e-mail, il tuo indirizzo e le informazioni contenute nel messaggio.",
+          "Dati dell'account (solo se ti registri): nome visualizzato, indirizzo e-mail, password (conservata in forma cifrata, non leggibile), profilo (chi sei, istituto se sei uno studente o un docente, nominativo e sede di appartenenza se sei un radioamatore, nazione facoltativa e lingua preferita), data di accettazione dell'informativa e, se attivi l'autenticazione a due fattori, il relativo segreto (conservato cifrato) e i codici di recupero (conservati come impronte irreversibili).",
+          "Commenti: il testo che scrivi, il passaggio della pagina a cui si riferisce, la data e il tuo nome visualizzato. Ogni commento è prima in attesa di approvazione e lo vedi solo tu; diventa visibile a chi consulta la pagina solo dopo l'approvazione del titolare.",
+          "Consenso a ricevere e-mail su eventi e pubblicazioni (facoltativo): la tua scelta e la data in cui l'hai espressa.",
           "Dati degli amministratori: nome utente e sessione di accesso, limitatamente alle persone autorizzate a gestire i contenuti della wiki.",
           "Cookie tecnici, descritti nella Cookie Policy.",
         ] },
@@ -176,14 +179,18 @@ const it = {
           "Garantire il funzionamento, la sicurezza e la manutenzione del sito: legittimo interesse del titolare (art. 6.1.f GDPR).",
           "Rispondere alle richieste inviate via e-mail: esecuzione di misure precontrattuali o legittimo interesse (art. 6.1.b e 6.1.f GDPR).",
           "Gestire l'area riservata ai contenuti: legittimo interesse del titolare (art. 6.1.f GDPR).",
+          "Creare e gestire il tuo account, verificare l'indirizzo e-mail con un messaggio di conferma, proteggere l'accesso e pubblicare i tuoi commenti: esecuzione del servizio da te richiesto (art. 6.1.b GDPR). L'accettazione dell'informativa è obbligatoria per registrarsi.",
+          "Moderare i commenti e prevenire abusi (limiti di frequenza, rimozione di contenuti inappropriati): legittimo interesse del titolare (art. 6.1.f GDPR).",
+          "Inviarti e-mail su eventi e pubblicazioni del progetto: tuo consenso, facoltativo e revocabile in ogni momento (art. 6.1.a GDPR). Non registrarti o non spuntare la casella non ha alcuna conseguenza sull'uso del servizio.",
         ] },
-        { h: "4. Cookie e profilazione", p: ["Il sito utilizza esclusivamente cookie tecnici e di preferenza. Non utilizziamo strumenti di analisi statistica, pubblicità, social plugin o altri servizi di terze parti che tracciano la navigazione. Non è svolta alcuna attività di profilazione né alcun processo decisionale automatizzato."], ul: [] },
-        { h: "5. Destinatari dei dati", p: ["I dati non sono diffusi né venduti. Possono essere trattati dal fornitore del servizio di hosting, nominato responsabile del trattamento, e da persone autorizzate dal titolare per la gestione tecnica del sito. I dati possono essere comunicati alle autorità competenti solo se previsto dalla legge."], ul: [] },
-        { h: "6. Conservazione", p: ["I log di navigazione sono conservati per il tempo strettamente necessario a garantire la sicurezza e il corretto funzionamento del sito. Le e-mail sono conservate per il tempo necessario a rispondere e a gestire eventuali successivi contatti. I dati degli amministratori sono conservati finché dura l'autorizzazione all'accesso."], ul: [] },
+        { h: "4. Cookie e profilazione", p: ["Il sito utilizza esclusivamente cookie tecnici, di preferenza e di sessione (compresi quelli dell'account, se ti registri). Non utilizziamo strumenti di analisi statistica, pubblicità, social plugin o altri servizi di terze parti che tracciano la navigazione. Non è svolta alcuna attività di profilazione né alcun processo decisionale automatizzato."], ul: [] },
+        { h: "5. Destinatari dei dati", p: ["I dati non sono venduti. I commenti approvati sono pubblici, con il tuo nome visualizzato; l'indirizzo e-mail non è mai mostrato agli altri utenti. I dati possono essere trattati dal fornitore del servizio di hosting e del database e dal fornitore del servizio di posta elettronica usato per i messaggi di conferma, nominati responsabili del trattamento, e da persone autorizzate dal titolare per la gestione tecnica del sito. I dati possono essere comunicati alle autorità competenti solo se previsto dalla legge."], ul: [] },
+        { h: "6. Conservazione", p: ["I log di navigazione sono conservati per il tempo strettamente necessario a garantire la sicurezza e il corretto funzionamento del sito. Le e-mail sono conservate per il tempo necessario a rispondere e a gestire eventuali successivi contatti. I dati degli amministratori sono conservati finché dura l'autorizzazione all'accesso. I dati dell'account e i commenti sono conservati finché non elimini l'account (puoi farlo in autonomia dalla pagina «Il mio account»: dopo 72 ore dalla richiesta vengono cancellati l'account e tutti i tuoi commenti, anche quelli già pubblicati; se accedi di nuovo in quel periodo l'eliminazione è annullata); gli account la cui e-mail non viene mai confermata possono essere eliminati. Il consenso a ricevere e-mail resta valido finché non lo revochi."], ul: [] },
         { h: "7. Trasferimenti extra UE", p: ["Il titolare non trasferisce dati personali verso Paesi esterni allo Spazio Economico Europeo di propria iniziativa. Qualora il fornitore di hosting operasse fuori dallo SEE, il trasferimento avverrebbe solo con garanzie adeguate previste dal GDPR."], ul: [] },
-        { h: "8. I tuoi diritti", p: ["Puoi in ogni momento chiedere l'accesso ai tuoi dati, la rettifica, la cancellazione, la limitazione del trattamento, la portabilità e opporti al trattamento (artt. 15–22 GDPR), scrivendo a info@argh.space. Hai inoltre il diritto di proporre reclamo al Garante per la protezione dei dati personali (www.garanteprivacy.it)."], ul: [] },
-        { h: "9. Link a siti esterni", p: ["Il sito può contenere link a siti di terzi (ad esempio MIT Haystack Observatory o GNU Radio). Il titolare non è responsabile delle loro politiche sulla privacy: ti invitiamo a consultarle."], ul: [] },
-        { h: "10. Modifiche", p: ["Questa informativa può essere aggiornata per adeguarsi a modifiche normative o del sito. La data dell'ultimo aggiornamento è indicata in cima alla pagina."], ul: [] },
+        { h: "8. I tuoi diritti", p: ["Puoi in ogni momento chiedere l'accesso ai tuoi dati, la rettifica, la cancellazione, la limitazione del trattamento, la portabilità e opporti al trattamento (artt. 15–22 GDPR), scrivendo a info@argh.space; scrivendo allo stesso indirizzo puoi anche revocare in ogni momento il consenso a ricevere e-mail, senza pregiudicare la liceità dei trattamenti precedenti. Hai inoltre il diritto di proporre reclamo al Garante per la protezione dei dati personali (www.garanteprivacy.it)."], ul: [] },
+        { h: "9. Regole per i commenti", p: ["Commentando ti impegni a scrivere contenuti pertinenti e rispettosi: non sono ammessi insulti, spam, pubblicità, dati personali di terzi o contenuti illeciti. Tutti i commenti sono moderati: il titolare li esamina prima della pubblicazione, può approvarli, segnarli come accettati (ad esempio quando il punto segnalato è stato corretto; in questo caso restano visibili solo a te) o rimuoverli, e può sospendere gli account che violano queste regole."], ul: [] },
+        { h: "10. Link a siti esterni", p: ["Il sito può contenere link a siti di terzi (ad esempio MIT Haystack Observatory o GNU Radio). Il titolare non è responsabile delle loro politiche sulla privacy: ti invitiamo a consultarle."], ul: [] },
+        { h: "11. Modifiche", p: ["Questa informativa può essere aggiornata per adeguarsi a modifiche normative o del sito. La data dell'ultimo aggiornamento è indicata in cima alla pagina."], ul: [] },
       ],
     },
     cookies: {
@@ -193,6 +200,8 @@ const it = {
       list: [
         { name: "lang", purpose: "Ricorda la lingua scelta (italiano o inglese) o rilevata dal browser.", duration: "12 mesi", type: "Tecnico · preferenza · prima parte" },
         { name: "cookie_notice", purpose: "Ricorda che hai letto l'avviso sui cookie, per non mostrartelo di nuovo.", duration: "12 mesi", type: "Tecnico · prima parte" },
+        { name: "argh_user", purpose: "Mantiene la sessione dell'account dei lettori registrati, per poter commentare. Viene creato solo dopo l'accesso o la conferma dell'e-mail.", duration: "30 giorni", type: "Tecnico · sessione · prima parte" },
+        { name: "argh_2fa_pending", purpose: "Ricorda per pochi minuti che hai inserito la password giusta, in attesa del codice dell'autenticazione a due fattori. Viene creato solo a chi ha attivato il 2FA.", duration: "5 minuti", type: "Tecnico · sicurezza · prima parte" },
         { name: "argh_admin", purpose: "Mantiene la sessione di accesso. Viene creato solo dagli amministratori dopo il login e non è impostato ai visitatori.", duration: "7 giorni", type: "Tecnico · sessione · prima parte" },
       ],
       sections: [

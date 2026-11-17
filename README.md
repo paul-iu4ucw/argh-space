@@ -46,6 +46,8 @@ Il sito è su <http://localhost:3000>, l'admin su <http://localhost:3000/admin>.
 | `DATABASE_URL_POOLED` | Connessione pooled, usata dall'app se presente (consigliata su Vercel) |
 | `NEXT_PUBLIC_SITE_URL` | URL pubblico del sito (canonical, sitemap) |
 | `NEXT_PUBLIC_WIKI_URL` | URL pubblico della wiki |
+| `SMTP_HOST` / `SMTP_PORT` | Server SMTP per le email di conferma (OVH: `ssl0.ovh.net`, porta 465) |
+| `SMTP_USER` / `SMTP_PASSWORD` | Casella da cui partono le email; `SMTP_FROM` (opzionale) cambia il mittente |
 
 Non committare `.env.local`. Cambia `ADMIN_PASSWORD` e `AUTH_SECRET` prima di andare online.
 
@@ -62,6 +64,7 @@ Non committare `.env.local`. Cambia `ADMIN_PASSWORD` e `AUTH_SECRET` prima di an
 | `npm run seed:hardware` | Sezione Hardware (IT `hardware`, EN `hardware-system`) |
 | `npm run seed:translations` | Traduzioni EN di Per iniziare, Software, Scuole |
 | `npx tsx scripts/check-hisim.ts` | Verifica i calcoli del simulatore (beam, guadagno, convoluzione, conteggio puntamenti) |
+| `npx tsx scripts/check-2fa.ts` | Verifica TOTP (vettori RFC 6238), cifratura del segreto e codici di recupero |
 | `node scripts/prepare-hi4pi.mjs` | Rigenera `public/sim/hi4pi-lb.png` dalla mappa HI4PI del file HTML originale |
 
 Gli script di seed **sostituiscono** le pagine dei gruppi che gestiscono, comprese le
@@ -105,6 +108,10 @@ L'area admin è marcata `noindex`.
 ### Strumenti (simulatore)
 
 Sezione fissa, definita nel codice (`src/lib/tools.ts`, testi in `src/lib/i18n/tools.ts`, logica in `src/lib/hisim.ts`, interfaccia in `src/app/wiki/_tools/`). Compare nel menu della wiki, nella home della wiki, nella sitemap e nel cambio lingua. Gli slug `strumenti` e `tools` sono riservati.
+
+### Account, commenti e 2FA
+
+I lettori si registrano su `/account/register` (email confermata con un link inviato via SMTP) e accedono da `/account/login`; da `/account` attivano il 2FA. Se una pagina ha «Feedback dei lettori» attivo, selezionando un testo si può commentare quel passaggio. L'area admin ha un menu laterale: Panoramica, Wiki (gruppi e pagine), Commenti, Utenti e Sicurezza (2FA dell'admin). Il 2FA è TOTP (Google Authenticator, Aegis, Authy…) con codici di recupero; i segreti sono cifrati nel database con una chiave derivata da `AUTH_SECRET`.
 
 ### Contenuti
 

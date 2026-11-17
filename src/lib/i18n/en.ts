@@ -154,7 +154,7 @@ const en: { [K in keyof Dict]: Dict[K] extends string ? string : Dict[K] } = {
   simulator: { eyebrow: "Tools", title: "Try it: how sharp is a dish?", text: "Change the dish size, scan step and noise and see how the 21 cm neutral hydrogen map changes.", cta: "Open the simulator" },
   banner: { title: "Documentation, guides and news", text: "All the technical and educational material of the project lives in the wiki.", cta: "Open wiki.argh.space" },
   legal: {
-    updated: "Last updated: 5 November 2026",
+    updated: "Last updated: 17 November 2026",
     back: "← Back to home",
     footer: { privacy: "Privacy", cookies: "Cookies" },
     banner: {
@@ -168,9 +168,12 @@ const en: { [K in keyof Dict]: Dict[K] extends string ? string : Dict[K] } = {
       intro: "This notice explains how personal data of visitors to argh.space and the wiki at wiki.argh.space is processed, pursuant to Articles 13 and 14 of Regulation (EU) 2016/679 (GDPR).",
       sections: [
         { h: "1. Data controller", p: ["The data controller is Paolo Marzi, project lead of A.R.G.H. – Astronomical Radio Ground Hub, Reggio Emilia (Italy). For any request about your personal data you can write to info@argh.space."], ul: [] },
-        { h: "2. What data we process", p: ["The site does not require registration and has no data collection forms. We only process:"], ul: [
+        { h: "2. What data we process", p: ["Browsing the site and the wiki does not require registration. An optional sign-up lets you leave comments on wiki pages. We process:"], ul: [
           "Browsing data: IP address, date and time of the request, requested page, browser type and operating system. These are logged automatically by the servers hosting the site.",
           "Data you provide voluntarily: if you write to us by e-mail, your address and the information in your message.",
+          "Account data (only if you sign up): display name, e-mail address, password (stored encrypted, not readable), profile (who you are, school or university if you are a student or a teacher, callsign and club or section if you are a radio amateur, optional country and preferred language), the date you accepted the notice and, if you turn on two-factor authentication, its secret (stored encrypted) and recovery codes (stored as irreversible hashes).",
+          "Comments: the text you write, the passage of the page it refers to, the date and your display name. Every comment is first awaiting approval and only you can see it; it becomes visible to anyone reading the page only after the controller approves it.",
+          "Consent to receive e-mails about events and publications (optional): your choice and the date you made it.",
           "Administrator data: username and login session, limited to the people authorised to manage wiki content.",
           "Technical cookies, described in the Cookie Policy.",
         ] },
@@ -178,14 +181,18 @@ const en: { [K in keyof Dict]: Dict[K] extends string ? string : Dict[K] } = {
           "Ensuring the operation, security and maintenance of the site: legitimate interest of the controller (Art. 6.1.f GDPR).",
           "Replying to e-mails you send: pre-contractual measures or legitimate interest (Art. 6.1.b and 6.1.f GDPR).",
           "Managing the content administration area: legitimate interest of the controller (Art. 6.1.f GDPR).",
+          "Creating and managing your account, verifying your e-mail address with a confirmation message, protecting access and publishing your comments: performance of the service you requested (Art. 6.1.b GDPR). Accepting this notice is mandatory to sign up.",
+          "Moderating comments and preventing abuse (rate limits, removal of inappropriate content): legitimate interest of the controller (Art. 6.1.f GDPR).",
+          "Sending you e-mails about project events and publications: your consent, optional and revocable at any time (Art. 6.1.a GDPR). Not signing up or leaving the box unticked has no effect on how you can use the service.",
         ] },
-        { h: "4. Cookies and profiling", p: ["The site only uses technical and preference cookies. We do not use analytics, advertising, social plugins or other third-party services that track browsing. No profiling or automated decision-making takes place."], ul: [] },
-        { h: "5. Recipients of the data", p: ["Data is neither disclosed nor sold. It may be processed by the hosting provider, appointed as data processor, and by persons authorised by the controller for the technical management of the site. Data may be disclosed to the competent authorities only where required by law."], ul: [] },
-        { h: "6. Retention", p: ["Browsing logs are kept for the time strictly necessary to ensure the security and proper operation of the site. E-mails are kept for as long as needed to reply and handle any follow-up contact. Administrator data is kept for as long as access is authorised."], ul: [] },
+        { h: "4. Cookies and profiling", p: ["The site only uses technical, preference and session cookies (including the account ones, if you sign up). We do not use analytics, advertising, social plugins or other third-party services that track browsing. No profiling or automated decision-making takes place."], ul: [] },
+        { h: "5. Recipients of the data", p: ["Data is not sold. Approved comments are public, shown with your display name; your e-mail address is never shown to other users. Data may be processed by the hosting and database provider and by the e-mail provider used for confirmation messages, appointed as data processors, and by persons authorised by the controller for the technical management of the site. Data may be disclosed to the competent authorities only where required by law."], ul: [] },
+        { h: "6. Retention", p: ["Browsing logs are kept for the time strictly necessary to ensure the security and proper operation of the site. E-mails are kept for as long as needed to reply and handle any follow-up contact. Administrator data is kept for as long as access is authorised. Account data and comments are kept until you delete the account (you can do it yourself from the ‘My account’ page: 72 hours after the request the account and all your comments, including published ones, are deleted; if you sign in again in that period the deletion is cancelled); accounts whose e-mail is never confirmed may be deleted. Consent to receive e-mails stays valid until you withdraw it."], ul: [] },
         { h: "7. Transfers outside the EU", p: ["The controller does not, on its own initiative, transfer personal data to countries outside the European Economic Area. Should the hosting provider operate outside the EEA, any transfer would take place only with the appropriate safeguards required by the GDPR."], ul: [] },
-        { h: "8. Your rights", p: ["At any time you can request access to your data, rectification, erasure, restriction of processing and portability, and object to processing (Arts. 15–22 GDPR), by writing to info@argh.space. You also have the right to lodge a complaint with the Italian Data Protection Authority (www.garanteprivacy.it)."], ul: [] },
-        { h: "9. Links to external sites", p: ["The site may contain links to third-party sites (for example MIT Haystack Observatory or GNU Radio). The controller is not responsible for their privacy practices: we invite you to read them."], ul: [] },
-        { h: "10. Changes", p: ["This notice may be updated to reflect legal or site changes. The date of the latest update is shown at the top of the page."], ul: [] },
+        { h: "8. Your rights", p: ["At any time you can request access to your data, rectification, erasure, restriction of processing and portability, and object to processing (Arts. 15–22 GDPR), by writing to info@argh.space; you can also withdraw your consent to receive e-mails at any time at the same address, without affecting the lawfulness of earlier processing. You also have the right to lodge a complaint with the Italian Data Protection Authority (www.garanteprivacy.it)."], ul: [] },
+        { h: "9. Rules for comments", p: ["By commenting you agree to write relevant and respectful content: insults, spam, advertising, third parties' personal data and unlawful content are not allowed. All comments are moderated: the controller reviews them before publication and may approve them, mark them as accepted (for example when the point you raised has been fixed; they then stay visible only to you) or remove them, and may suspend accounts that break these rules."], ul: [] },
+        { h: "10. Links to external sites", p: ["The site may contain links to third-party sites (for example MIT Haystack Observatory or GNU Radio). The controller is not responsible for their privacy practices: we invite you to read them."], ul: [] },
+        { h: "11. Changes", p: ["This notice may be updated to reflect legal or site changes. The date of the latest update is shown at the top of the page."], ul: [] },
       ],
     },
     cookies: {
@@ -195,6 +202,8 @@ const en: { [K in keyof Dict]: Dict[K] extends string ? string : Dict[K] } = {
       list: [
         { name: "lang", purpose: "Remembers the language you chose (Italian or English) or that was detected from your browser.", duration: "12 months", type: "Technical · preference · first party" },
         { name: "cookie_notice", purpose: "Remembers that you have read the cookie notice, so it is not shown again.", duration: "12 months", type: "Technical · first party" },
+        { name: "argh_user", purpose: "Keeps the login session of registered readers, so they can comment. It is created only after signing in or confirming the e-mail.", duration: "30 days", type: "Technical · session · first party" },
+        { name: "argh_2fa_pending", purpose: "Remembers for a few minutes that you entered the right password, while waiting for the two-factor code. It is created only for people who turned on 2FA.", duration: "5 minutes", type: "Technical · security · first party" },
         { name: "argh_admin", purpose: "Keeps the login session. It is created only for administrators after login and is not set for visitors.", duration: "7 days", type: "Technical · session · first party" },
       ],
       sections: [

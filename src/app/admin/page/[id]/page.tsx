@@ -20,7 +20,7 @@ export default async function EditPage({ params, searchParams }: {
   const s = pg.section;
   return (
     <div className="adm wide">
-      <nav className="crumbs"><a href="/admin">Gestione</a><span>/</span><span>{s.title}</span><span>/</span><b>{pg.title}</b></nav>
+      <nav className="crumbs"><a href="/admin/wiki">Wiki</a><span>/</span><a href={`/admin/wiki/${s.id}`}>{s.title}</a><span>/</span><b>{pg.title}</b></nav>
       {q.saved && <p className="flash ok"><CheckCircle2 size={17} /> Modifiche salvate.</p>}
       {q.err && <p className="flash err"><AlertTriangle size={17} /> L'indirizzo scelto è già usato da un'altra pagina di questo gruppo.</p>}
 
@@ -40,6 +40,14 @@ export default async function EditPage({ params, searchParams }: {
               <i /><span>Pubblicata</span>
             </label>
             <p className="meta">Se disattivata, la pagina resta una bozza visibile solo a te.</p>
+          </div>
+          <div className="ebox">
+            <h4>Commenti</h4>
+            <label className="switch">
+              <input type="checkbox" name="comments" defaultChecked={pg.commentsEnabled} />
+              <i /><span>Feedback dei lettori</span>
+            </label>
+            <p className="meta">Selezionando un testo i lettori registrati possono lasciare un commento su quel punto. Se disattivi, i commenti esistenti restano salvati ma non si vedono.</p>
           </div>
           <div className="ebox">
             <h4>Indirizzo</h4>

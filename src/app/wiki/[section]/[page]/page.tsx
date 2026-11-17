@@ -4,6 +4,9 @@ import Link from "next/link";
 import { ChevronLeft, ChevronRight, Clock, Pencil, Languages } from "lucide-react";
 import { JsonLd } from "../../../jsonld";
 import { Prose } from "../../../prose";
+import { CommentLayer } from "../../../comment-layer";
+import { currentUser } from "@/lib/user-auth";
+import { prisma } from "@/lib/db";
 import { wikiOrigin, wikiPageUrl, wikiSectionUrl, siteUrl } from "@/lib/seo";
 import { sectionBySlug, pageBySlug, pagesOf, alternates } from "@/lib/db";
 import { isAdmin } from "@/lib/auth";
@@ -48,6 +51,19 @@ export default async function WikiPage({ params }: Params) {
   const i = siblings.findIndex((x) => x.id === pg.id);
   const prev = siblings[i - 1], next = siblings[i + 1];
   const alts = await alternates(pg);
+  const showComments = pg.commentsEnabled && pg.published;
+  const me = showComments ? await currentUser() : null;
+  const comments = showComments
+    // visibili: quelli approvati, i propri (anche in attesa o accettati) e, per l'admin, tutti
+    ? (await prisma.comment.findMany({
+        // chi ha chiesto l'eliminazione dell'account non compare più: i suoi commenti si nascondono subito
+        where: { pageId: pg.id, ...(admin ? {} : { user: { deleteAt: null }, OR: [{ status: "approved" }, ...(me ? [{ userId: me.id }] : [])] }) },
+        orderBy: { createdAt: "asc" }, include: { user: { select: { name: true } } },
+      })).map((c) => ({
+        id: c.id, block: c.block, quote: c.quote, body: c.body, createdAt: c.createdAt.toISOString(), author: c.user.name,
+        status: c.status, canDelete: admin || (c.userId === me?.id && c.status === "pending"),
+      }))
+    : [];
   const url = (x: { slug: string }) => `${base}/${s.slug}/${x.slug}`;
   const ld = {
     "@context": "https://schema.org",
@@ -84,7 +100,9 @@ export default async function WikiPage({ params }: Params) {
           ))}
           {admin && <a href={`/admin/page/${pg.id}`}><Pencil size={14} /> {T.edit}</a>}
         </p>
-        <Prose html={html} />
+        {showComments
+          ? <CommentLayer html={html} pageId={pg.id} lang={L} base={base} comments={comments} user={me ? { name: me.name } : null} />
+          : <Prose html={html} />}
         <div className="pn">
           {prev ? <Link href={url(prev)}><ChevronLeft size={18} /><span><small>{T.prev}</small>{prev.title}</span></Link> : <i />}
           {next ? <Link href={url(next)} className="r"><span><small>{T.next}</small>{next.title}</span><ChevronRight size={18} /></Link> : <i />}

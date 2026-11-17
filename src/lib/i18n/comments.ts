@@ -1,0 +1,36 @@
+export const commentText = {
+  it: {
+    add: "Commenta questo passaggio", title: "Feedback", on: "Sul testo", none: "Nessun commento su questo punto.",
+    placeholder: "Scrivi il tuo commento…", send: "Invia", sending: "Invio…", close: "Chiudi", del: "Elimina", delAsk: "Eliminare il commento?",
+    loginNeed: "Per commentare e lasciare feedback",loginLow: "accedi", login: "Accedi", register: "Registrati", logout: "Esci", as: "Collegato come",
+    name: "Nome", email: "Email", password: "Password", passwordHint: "Almeno 8 caratteri",
+    sentT: "Controlla la tua email", sentP: (e: string) => `Ti abbiamo scritto a ${e}: apri il messaggio e conferma l'indirizzo. Controlla anche lo spam.`,
+    code: "Codice di verifica", codeHint: "Codice a 6 cifre dall'app, oppure un codice di recupero", verify: "Verifica", loginTitle: "Accedi", registerTitle: "Crea un account", loginLead: "Accedi per commentare le pagine della wiki.", registerLead: "Ti serve per lasciare commenti. Ti invieremo un'email per confermare l'indirizzo.", noAcc: "Non hai un account?", orWord: "oppure", myAccount: "Il mio account", backWiki: "Torna alla wiki", whoAmI: "Chi sei?", callsign: "Nominativo (es. IU4UCW)", club: "Sede / sezione (es. IQ4RE)", country: "Nazione (opz.)", language: "Lingua", institute: "Istituto (scuola o università)", forgot: "Password dimenticata?", sideTitle: "Entra nella community di A.R.G.H.", sideLead: "Un account gratuito per partecipare alla wiki del radiotelescopio.", side: ["Commenta le guide e lascia feedback su ogni passaggio", "Resta aggiornato su eventi e pubblicazioni, se vuoi", "Account protetto, con autenticazione a due fattori"], stPending: "In attesa di approvazione · lo vedi solo tu", stAccepted: "Accettato · grazie, ne abbiamo tenuto conto. Non è pubblico", modNote: "I commenti diventano visibili agli altri dopo l'approvazione. Intanto li vedi tu.", sentOk: "Commento inviato: sarà visibile agli altri dopo l'approvazione.", consent: "Acconsento di ricevere email per eventi e pubblicazioni (facoltativo)", privacyPre: "Ho letto l'", privacyLink: "Informativa sulla privacy", privacyPost: " e le regole per i commenti, e li accetto", toLogin: "Accedi per commentare", or: "oppure", registerLow: "registrati", have: "Hai già un account?", account: "Account", resend: "Invia di nuovo l'email", back: "Indietro",
+    comments: (n: number) => (n === 1 ? "1 commento" : `${n} commenti`),
+    err: {
+      role: "Scegli chi sei.", institute: "Indica il tuo istituto.", callsign: "Nominativo non valido (es. IU4UCW).",
+      invalid: "Email o password non corrette.", email: "Email non valida.", password: "La password deve avere almeno 8 caratteri.",
+      name: "Il nome deve avere da 2 a 40 caratteri.", exists: "Esiste già un account con questa email.", spam: "Richiesta rifiutata.",
+      login: "Accedi per commentare.", off: "I commenti non sono attivi su questa pagina.", empty: "Scrivi qualcosa prima di inviare.",
+      rate: "Troppi commenti in poco tempo: riprova tra un minuto.", code: "Codice non corretto.", locked: "Troppi tentativi: riprova tra 15 minuti.", privacy: "Per registrarti devi accettare l'informativa sulla privacy.", unverified: "Devi ancora confermare l'email: controlla la posta.", mail: "Non siamo riusciti a inviare l'email, riprova più tardi.", wait: "Attendi un minuto prima di richiedere un altro messaggio.", generic: "Qualcosa non ha funzionato, riprova.",
+    },
+    locale: "it-IT",
+  },
+  en: {
+    add: "Comment on this passage", title: "Feedback", on: "On the text", none: "No comments on this passage yet.",
+    placeholder: "Write your comment…", send: "Send", sending: "Sending…", close: "Close", del: "Delete", delAsk: "Delete this comment?",
+    loginNeed: "To comment and leave feedback,",loginLow: "sign in", login: "Sign in", register: "Sign up", logout: "Sign out", as: "Signed in as",
+    name: "Name", email: "Email", password: "Password", passwordHint: "At least 8 characters",
+    sentT: "Check your email", sentP: (e: string) => `We sent a message to ${e}: open it and confirm your address. Check your spam folder too.`,
+    code: "Verification code", codeHint: "6-digit code from your app, or a recovery code", verify: "Verify", loginTitle: "Sign in", registerTitle: "Create an account", loginLead: "Sign in to comment on wiki pages.", registerLead: "You need it to leave comments. We will email you to confirm your address.", noAcc: "No account yet?", orWord: "or", myAccount: "My account", backWiki: "Back to the wiki", whoAmI: "Who are you?", callsign: "Callsign (e.g. IU4UCW)", club: "Club / section (e.g. IQ4RE)", country: "Country (opt.)", language: "Language", institute: "School or university", forgot: "Forgot your password?", sideTitle: "Join the A.R.G.H. community", sideLead: "A free account to take part in the radio telescope wiki.", side: ["Comment on the guides and leave feedback on any passage", "Stay up to date on events and publications, if you like", "Protected account, with two-factor authentication"], stPending: "Awaiting approval · only you can see it", stAccepted: "Accepted · thanks, we took it into account. Not public", modNote: "Comments become visible to others after approval. Meanwhile only you see them.", sentOk: "Comment sent: it will be visible to others after approval.", consent: "I agree to receive emails about events and publications (optional)", privacyPre: "I have read the ", privacyLink: "Privacy Policy", privacyPost: " and the rules for comments, and I accept them", toLogin: "Sign in to comment", or: "or", registerLow: "sign up", have: "Already have an account?", account: "Account", resend: "Send the email again", back: "Back",
+    comments: (n: number) => (n === 1 ? "1 comment" : `${n} comments`),
+    err: {
+      role: "Choose who you are.", institute: "Enter your school or university.", callsign: "Invalid callsign (e.g. IU4UCW).",
+      invalid: "Wrong email or password.", email: "Invalid email address.", password: "The password must be at least 8 characters.",
+      name: "The name must be 2 to 40 characters.", exists: "An account with this email already exists.", spam: "Request rejected.",
+      login: "Sign in to comment.", off: "Comments are not enabled on this page.", empty: "Write something before sending.",
+      rate: "Too many comments in a short time: try again in a minute.", code: "Wrong code.", locked: "Too many attempts: try again in 15 minutes.", privacy: "To sign up you must accept the privacy notice.", unverified: "You still need to confirm your email: check your inbox.", mail: "We couldn't send the email, please try again later.", wait: "Please wait a minute before asking for another message.", generic: "Something went wrong, please try again.",
+    },
+    locale: "en-GB",
+  },
+} as const;

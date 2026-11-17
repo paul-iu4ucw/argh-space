@@ -2,17 +2,16 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Search, ChevronDown, Menu, X } from "lucide-react";
+import { Search, ChevronDown } from "lucide-react";
 import { Icon } from "./icons";
 
 type Sec = { title: string; slug: string; icon: string; lang: string; pages: { title: string; slug: string }[] };
 type Labels = { search: string; noResults: string; menu: string };
 
-export function WikiNav({ base, sections, defaultLang, labels }: { base: string; sections: Sec[]; defaultLang: string; labels: Record<string, Labels> }) {
+export function WikiNav({ base, sections, defaultLang, labels, extra }: { extra?: React.ReactNode; base: string; sections: Sec[]; defaultLang: string; labels: Record<string, Labels> }) {
   const path = usePathname();
   const [q, setQ] = useState("");
   const [open, setOpen] = useState<Record<string, boolean>>({});
-  const [mobile, setMobile] = useState(false);
   const href = (s: Sec, p?: { slug: string }) => `${base}/${s.slug}${p ? "/" + p.slug : ""}`;
 
   // La lingua dell'indice segue la pagina aperta; altrimenti quella scelta dal visitatore.
@@ -21,7 +20,6 @@ export function WikiNav({ base, sections, defaultLang, labels }: { base: string;
   const L = labels[lang] ?? labels[defaultLang];
 
   useEffect(() => {
-    setMobile(false);
     if (active) setOpen((o) => ({ ...o, [active.slug]: true }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [path]);
@@ -37,10 +35,8 @@ export function WikiNav({ base, sections, defaultLang, labels }: { base: string;
 
   return (
     <aside className="side">
-      <button className="side-toggle" onClick={() => setMobile(!mobile)} aria-expanded={mobile}>
-        {mobile ? <X size={18} /> : <Menu size={18} />} {L.menu}
-      </button>
-      <div className={`side-body ${mobile ? "open" : ""}`}>
+      <div className="side-body">
+        {extra && <div className="side-extra">{extra}</div>}
         <label className="search"><Search size={16} />
           <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={L.search} aria-label={L.search} />
         </label>
