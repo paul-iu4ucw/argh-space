@@ -7,6 +7,8 @@ import { wikiOrigin } from "@/lib/seo";
 import { getLang } from "@/lib/i18n";
 import { wikiText, asWLang } from "@/lib/i18n/wiki";
 import { Icon } from "../icons";
+import { toolsSlug, toolsText } from "@/lib/i18n/tools";
+import { tools } from "@/lib/tools";
 
 export const metadata: Metadata = { alternates: { canonical: wikiOrigin }, openGraph: { type: "website", url: wikiOrigin, siteName: "A.R.G.H. Wiki", title: "Wiki A.R.G.H." } };
 
@@ -37,6 +39,11 @@ export default async function WikiHome() {
             <span className="count">{s.pages.length} {s.pages.length === 1 ? S.page : S.pages} →</span>
           </Link>
         ))}
+        <Link href={`${base}/${toolsSlug[lang]}`} className="card scard">
+          <div className="chead"><div className="ico"><Icon name="wrench" /></div><h3>{toolsText[lang].section}</h3></div>
+          <ul>{tools.map((t) => <li key={t.id}>{toolsText[lang].sim.short}</li>)}</ul>
+          <span className="count">{tools.length} {tools.length === 1 ? T.page : T.pages} →</span>
+        </Link>
       </div>
 
       {recent.length > 0 && (

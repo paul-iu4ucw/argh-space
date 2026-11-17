@@ -151,6 +151,7 @@ const en: { [K in keyof Dict]: Dict[K] extends string ? string : Dict[K] } = {
     { icon: "handshake", title: "Schools and partners", text: "Schools and local organisations who want to take part" },
   ],
   contact: "Questions, ideas, skills to offer? Write to ",
+  simulator: { eyebrow: "Tools", title: "Try it: how sharp is a dish?", text: "Change the dish size, scan step and noise and see how the 21 cm neutral hydrogen map changes.", cta: "Open the simulator" },
   banner: { title: "Documentation, guides and news", text: "All the technical and educational material of the project lives in the wiki.", cta: "Open wiki.argh.space" },
   legal: {
     updated: "Last updated: 5 November 2026",

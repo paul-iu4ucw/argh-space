@@ -5,7 +5,7 @@ import { checkCredentials, createSession, destroySession, isAdmin } from "./auth
 import { prisma, slugify } from "./db";
 import { clean, toHtml } from "./content";
 
-const RESERVED = ["admin", "wiki", "api", "privacy", "cookie", "login"];
+const RESERVED = ["admin", "wiki", "api", "privacy", "cookie", "login", "strumenti", "tools"];
 
 async function guard() { if (!(await isAdmin())) redirect("/admin/login"); }
 const str = (f: FormData, k: string) => String(f.get(k) ?? "").trim();

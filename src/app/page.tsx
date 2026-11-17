@@ -6,6 +6,7 @@ import { SiteNav } from "./site-nav";
 import { JsonLd } from "./jsonld";
 import { siteUrl, wikiOrigin } from "@/lib/seo";
 import { getContent, wikiUrl } from "@/lib/i18n";
+import { toolsSlug, hiSimSlug } from "@/lib/i18n/tools";
 
 function Head({ eyebrow, title, sub }: { eyebrow: string; title: string; sub?: string }) {
   return (
@@ -229,6 +230,11 @@ export default async function Home() {
             ))}
           </div>
           <Reveal><p className="contact">{c.contact}<a href={`mailto:${site.email}`}>{site.email}</a></p></Reveal>
+        </section>
+
+        <section className="wrap">
+          <Head eyebrow={c.simulator.eyebrow} title={c.simulator.title} sub={c.simulator.text} />
+          <Reveal><a href={`${wikiUrl}/${toolsSlug[lang]}/${hiSimSlug[lang]}`} className="btn">{c.simulator.cta}</a></Reveal>
         </section>
 
         <section className="wrap">

@@ -6,6 +6,7 @@ import { isAdmin } from "@/lib/auth";
 import { wikiBase } from "@/lib/wikibase";
 import { getLang } from "@/lib/i18n";
 import { wikiText } from "@/lib/i18n/wiki";
+import { toolsNav, toolPaths } from "@/lib/tools";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -22,7 +23,7 @@ export default async function WikiLayout({ children }: { children: React.ReactNo
   const nav = (await sectionsWithPages()).map((s) => ({
     title: s.title, slug: s.slug, icon: s.icon, lang: s.lang,
     pages: s.pages.map((p) => ({ title: p.title, slug: p.slug })),
-  })).filter((s) => s.pages.length);
+  })).filter((s) => s.pages.length).concat(toolsNav());   // "Strumenti": sezione fissa, non nel database
   const admin = await isAdmin();
   // percorso -> { lingua: percorso della traduzione } (stessa "key"), per cambiare lingua restando sulla stessa pagina
   const all = await sectionsWithPages();
@@ -33,6 +34,7 @@ export default async function WikiLayout({ children }: { children: React.ReactNo
     put(`${base}/${s.slug}`, t.lang, `${base}/${t.slug}`);
     for (const p of s.pages) { const q = p.key ? t.pages.find((x) => x.key === p.key) : undefined; if (q) put(`${base}/${s.slug}/${p.slug}`, t.lang, `${base}/${t.slug}/${q.slug}`); }
   }
+  Object.assign(alts, toolPaths(base));
   const labels = Object.fromEntries((["it", "en"] as const).map((l) => [l, { search: wikiText[l].search, noResults: wikiText[l].noResults, menu: wikiText[l].menu }]));
   return (
     <>

@@ -7,6 +7,7 @@ Il repository contiene:
 
 - la **landing page** (`argh.space`), bilingue IT/EN;
 - la **wiki** (`wiki.argh.space`), con contenuti bilingue collegati tra loro;
+- la sezione fissa **Strumenti** della wiki (`/strumenti`, `/tools`): il simulatore del beam a 21 cm, non modificabile dall'admin;
 - l'**area admin** (`/admin`) per gestire gruppi e pagine della wiki con un editor rich text.
 
 ## Stack
@@ -60,6 +61,8 @@ Non committare `.env.local`. Cambia `ADMIN_PASSWORD` e `AUTH_SECRET` prima di an
 | `npm run seed` | Gruppi e pagine di esempio |
 | `npm run seed:hardware` | Sezione Hardware (IT `hardware`, EN `hardware-system`) |
 | `npm run seed:translations` | Traduzioni EN di Per iniziare, Software, Scuole |
+| `npx tsx scripts/check-hisim.ts` | Verifica i calcoli del simulatore (beam, guadagno, convoluzione, conteggio puntamenti) |
+| `node scripts/prepare-hi4pi.mjs` | Rigenera `public/sim/hi4pi-lb.png` dalla mappa HI4PI del file HTML originale |
 
 Gli script di seed **sostituiscono** le pagine dei gruppi che gestiscono, comprese le
 modifiche fatte dall'admin: non rilanciarli su contenuti già rivisti.
@@ -98,6 +101,10 @@ Su `/admin`, dopo il login, si possono creare, rinominare, riordinare ed elimina
 scegliere l'icona del gruppo, pubblicare o nascondere una pagina. Per collegare una pagina alla sua
 traduzione usa lo stesso valore nel campo "Collegamento traduzione", sia sul gruppo sia sulla pagina.
 L'area admin è marcata `noindex`.
+
+### Strumenti (simulatore)
+
+Sezione fissa, definita nel codice (`src/lib/tools.ts`, testi in `src/lib/i18n/tools.ts`, logica in `src/lib/hisim.ts`, interfaccia in `src/app/wiki/_tools/`). Compare nel menu della wiki, nella home della wiki, nella sitemap e nel cambio lingua. Gli slug `strumenti` e `tools` sono riservati.
 
 ### Contenuti
 

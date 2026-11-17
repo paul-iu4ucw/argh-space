@@ -149,6 +149,7 @@ const it = {
     { icon: "handshake", title: "Scuole e partner", text: "Istituti e realtà locali che vogliano partecipare" },
   ],
   contact: "Domande, idee, competenze da mettere in campo? Scrivi a ",
+  simulator: { eyebrow: "Strumenti", title: "Provalo: quanto vede una parabola?", text: "Cambia il diametro della parabola, il passo di scansione e il rumore e guarda come cambia la mappa dell'idrogeno neutro a 21 cm.", cta: "Apri il simulatore" },
   banner: { title: "Documentazione, guide e novità", text: "Tutto il materiale tecnico e didattico del progetto vive nella wiki.", cta: "Apri wiki.argh.space" },
   legal: {
     updated: "Ultimo aggiornamento: 5 novembre 2026",
