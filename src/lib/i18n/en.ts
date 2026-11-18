@@ -205,9 +205,9 @@ const en: { [K in keyof Dict]: Dict[K] extends string ? string : Dict[K] } = {
       list: [
         { name: "lang", purpose: "Remembers the language you chose (Italian or English) or that was detected from your browser.", duration: "12 months", type: "Technical · preference · first party" },
         { name: "cookie_consent", purpose: "Remembers your choice about statistics cookies (accept or decline), so the banner is not shown again.", duration: "6 months", type: "Technical · first party" },
-        { name: "argh_user", purpose: "Keeps the login session of registered readers, so they can comment. It is created only after signing in or confirming the e-mail.", duration: "30 days", type: "Technical · session · first party" },
+        { name: "argh_user_session", purpose: "Keeps the login session of registered readers, so they can comment. It is created only after signing in or confirming the e-mail.", duration: "30 days", type: "Technical · session · first party" },
         { name: "argh_2fa_pending", purpose: "Remembers for a few minutes that you entered the right password, while waiting for the two-factor code. It is created only for people who turned on 2FA.", duration: "5 minutes", type: "Technical · security · first party" },
-        { name: "argh_admin", purpose: "Keeps the login session. It is created only for administrators after login and is not set for visitors.", duration: "7 days", type: "Technical · session · first party" },
+        { name: "argh_admin_session", purpose: "Keeps the login session. It is created only for administrators after login and is not set for visitors.", duration: "7 days", type: "Technical · session · first party" },
         { name: "dash_prefs", purpose: "Remembers the dashboard preferences (units of measure, time zone) if you change them without signing in. It is created only when you save the preferences.", duration: "12 months", type: "Technical \u00b7 preference \u00b7 first party" },
         { name: "_ga", purpose: "Google Analytics: tells visitors apart in statistical form to measure visits to the site. Only with your consent.", duration: "2 years", type: "Statistics · third party (Google)" },
         { name: "_ga_<ID>", purpose: "Google Analytics: keeps the state of the browsing session. Only with your consent.", duration: "2 years", type: "Statistics · third party (Google)" },

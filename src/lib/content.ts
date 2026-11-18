@@ -30,7 +30,7 @@ export function render(content: string) {
     const t = text(inner); let id = slug(t), n = 2; while (used.has(id)) id = `${slug(t)}-${n++}`; used.add(id);
     toc.push({ id, text: t, level: Number(lv) });
     return `<h${lv}${attrs} id="${id}">${inner}</h${lv}>`;
-  });
+  }).replace(/<table/g, '<div class="tbl"><table').replace(/<\/table>/g, "</table></div>"); // le tabelle riempiono la larghezza; se sono troppo larghe scorre il contenitore
   return { html, toc };
 }
 export const plain = (content: string) => text(clean(toHtml(content)));

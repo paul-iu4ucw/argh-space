@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { prisma } from "./db";
+import { sharedDomain } from "./cookie-domain";
 import { currentUser } from "./user-auth";
 import { DEFAULT_PREFS, PREFS_COOKIE, parsePrefs, prefsKey, type Prefs } from "./dash-prefs";
 
@@ -19,7 +20,7 @@ export async function getPrefs(): Promise<{ prefs: Prefs; where: "account" | "br
 
 /** Salva: sempre nel cookie (vale anche da scollegati), e nell'account se sei collegato. */
 export async function storePrefs(p: Prefs) {
-  (await cookies()).set(PREFS_COOKIE, JSON.stringify(p), { path: "/", maxAge: 60 * 60 * 24 * 365, sameSite: "lax", httpOnly: true, secure: process.env.NODE_ENV === "production" });
+  (await cookies()).set(PREFS_COOKIE, JSON.stringify(p), { path: "/", maxAge: 60 * 60 * 24 * 365, sameSite: "lax", httpOnly: true, secure: process.env.NODE_ENV === "production", domain: await sharedDomain() });
   const me = await currentUser().catch(() => null);
   if (me) await prisma.setting.upsert({ where: { key: prefsKey(me.id) }, create: { key: prefsKey(me.id), value: JSON.stringify(p) }, update: { value: JSON.stringify(p) } });
   return !!me;

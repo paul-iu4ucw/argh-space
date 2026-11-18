@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { TopographyBg } from "../topography-bg";
 import Link from "next/link";
 import { Clock } from "lucide-react";
 import { sectionsWithPages, recentPages } from "@/lib/db";
@@ -24,6 +25,7 @@ export default async function WikiHome() {
   return (
     <>
       <section className="whero">
+        <TopographyBg />
         <p className="eyebrow">{T.heroEyebrow}</p>
         <h1>{T.heroTitle}</h1>
         <p>{T.heroText}</p>

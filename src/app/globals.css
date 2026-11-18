@@ -361,7 +361,8 @@ body.noscroll{overflow:hidden}
 
 /* tabelle della wiki: le parole non si spezzano a metà */
 .prose th,.prose td{overflow-wrap:normal;word-break:normal;hyphens:manual}
-.prose table{display:block;overflow-x:auto}
+.prose .tbl{overflow-x:auto;margin:1.3em 0;border:1px solid var(--line);border-radius:12px}
+.prose .tbl table{display:table;width:100%;margin:0;border:0;border-radius:0}
 
 /* scheletro di caricamento della wiki */
 .skel{display:grid;gap:12px;padding-top:8px}
@@ -838,3 +839,73 @@ h1,h2,h3,h4,h5,.brand,.eyebrow,.menu,.anav,.side,.aside,.au-tabs,.dsh-tabs,.badg
 .pill input:focus-visible+span{outline:2px solid var(--acc);outline-offset:2px}
 .pref-act{display:flex;gap:10px;flex-wrap:wrap;margin:6px 0 0}
 .dash .pref-where,.dash .flash{max-width:720px}
+
+/* barra di indicatori e grafico interattivo della dashboard RFI */
+.rb{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;margin:16px 0}
+.rb-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));border-bottom:1px solid var(--line)}
+.rb-kpi{position:relative;display:flex;flex-direction:column;gap:6px;padding:16px 18px 10px;background:none;border:0;border-right:1px solid var(--line);color:var(--fg);font:inherit;text-align:left;cursor:pointer;transition:background .15s}
+.rb-kpi:last-child{border-right:0}
+.rb-kpi:hover{background:rgba(41,182,246,.05)}
+.rb-kpi.on{background:rgba(41,182,246,.09);box-shadow:inset 0 -3px 0 var(--acc)}
+.rb-kl{font-size:.8rem;color:var(--mute);letter-spacing:.02em}
+.rb-kv{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.rb-kv b{font-size:1.9rem;line-height:1.1}
+.rb-kv em{font-style:normal;font-size:.78rem;padding:2px 7px;border-radius:999px}
+.rb-kv em.up{color:#6fe0a8;background:rgba(31,170,107,.15)}.rb-kv em.down{color:#ff9a94;background:rgba(217,69,61,.15)}
+.rb-spark{display:block;width:100%;height:30px;margin-top:2px}
+.rb-chart{position:relative;padding:14px 14px 8px}
+.rb-svg{display:block;width:100%;height:auto;touch-action:pan-y;cursor:crosshair}
+.rb-empty{padding:30px;text-align:center}
+.rb-legend{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 6px 30px}
+.rb-legend button{display:inline-flex;align-items:center;gap:7px;padding:4px 11px;border:1px solid var(--line);border-radius:999px;background:none;color:var(--fg);font:inherit;font-size:.82rem;cursor:pointer}
+.rb-legend button.off{opacity:.45}.rb-legend i{width:10px;height:10px;border-radius:50%}
+.rb-tip{position:absolute;top:34px;z-index:5;min-width:150px;padding:9px 12px;background:rgba(5,8,22,.96);border:1px solid var(--line);border-radius:10px;box-shadow:0 12px 30px -10px #000;pointer-events:none;font-size:.82rem;display:grid;gap:4px}
+.rb-tip b{color:var(--mute);font-weight:600}.rb-tip span{display:flex;align-items:center;gap:7px}.rb-tip span i{width:9px;height:9px;border-radius:50%;flex:none}.rb-tip span em{font-style:normal;margin-left:auto;padding-left:14px;font-weight:700}
+@media(max-width:560px){.rb-kv b{font-size:1.5rem}.rb-kpi{padding:12px 12px 8px}.rb-legend{margin-left:0}}
+
+/* liste a barre (segnali ricorrenti) */
+.dsh-bars{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:10px}
+.dsh-bars li{display:grid;grid-template-columns:130px 1fr auto;grid-template-areas:"f n b" "bar bar bar";gap:6px 12px;align-items:center;font-size:.9rem}
+.dsh-bars .bl-f{grid-area:f}.dsh-bars .bl-n{grid-area:n}.dsh-bars .badge{grid-area:b}.dsh-bars .bl-bar{grid-area:bar}
+.dsh-bars .bl-f{font-variant-numeric:tabular-nums;font-weight:600}
+.dsh-bars .bl-bar{height:10px;border-radius:6px;background:rgba(154,167,199,.14);overflow:hidden}
+.dsh-bars .bl-bar i{display:block;height:100%;border-radius:6px}.bl-bar i.prot{background:linear-gradient(90deg,#e0a21b,#f0c25a)}.bl-bar i.adj{background:linear-gradient(90deg,#3d8bff,#29b6f6)}
+.dsh-bars .bl-n{color:var(--mute);white-space:nowrap;font-size:.82rem}
+@media(max-width:620px){.dsh-bars li{grid-template-columns:1fr auto;grid-template-areas:"f b" "n n" "bar bar"}}
+
+/* schema interattivo del sistema */
+.sg{display:grid;gap:12px}
+.sg-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.sg-hint{margin:0;color:var(--mute);font-size:.88rem}
+.sg-canvas{background:radial-gradient(ellipse at 50% 0,rgba(41,182,246,.07),transparent 60%),var(--bg2);border:1px solid var(--line);border-radius:var(--r);padding:10px;overflow:hidden}
+.sg-svg{display:block;width:100%;height:auto;touch-action:none;user-select:none}
+.sg-node{cursor:grab;outline:none}.sg-node.drag{cursor:grabbing}
+.sg-box{fill:var(--bg);stroke-width:1.5;transition:stroke .15s,filter .15s}
+.sg-node:hover .sg-box{stroke:var(--acc)}
+.sg-node.on .sg-box{stroke-width:2;filter:drop-shadow(0 6px 18px rgba(41,182,246,.35))}
+.sg-node:focus-visible .sg-box{stroke:#fff;stroke-width:2.5}
+.sg-title{font:700 15px var(--font-play),system-ui,sans-serif;fill:var(--fg);pointer-events:none}
+.sg-sub{font:12px system-ui,sans-serif;fill:var(--mute);pointer-events:none}
+.sg-elabel{font:11.5px system-ui,sans-serif;fill:var(--mute);pointer-events:none;paint-order:stroke;stroke:var(--bg2);stroke-width:4px}
+.sg-edge{transition:opacity .2s}
+.sg-flow{stroke-dasharray:5 8;animation:sgflow 1.3s linear infinite}
+@keyframes sgflow{to{stroke-dashoffset:-26}}
+@media(prefers-reduced-motion:reduce){.sg-flow{animation:none}}
+.sg-legend{display:flex;gap:18px;flex-wrap:wrap;color:var(--mute);font-size:.85rem}.sg-legend span{display:inline-flex;align-items:center;gap:7px}.sg-legend i{width:10px;height:10px;border-radius:3px}
+.sg-detail{padding:18px 20px;background:var(--bg2);border:1px solid var(--line);border-left-width:4px;border-radius:var(--r)}
+.sg-detail h3{margin:2px 0 8px;font-size:1.25rem}.sg-detail h3 small{font:400 .85rem system-ui;color:var(--mute);margin-left:8px}
+.sg-detail p{margin:0 0 10px;color:var(--mute)}.sg-detail .sg-dg{font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;font-weight:700;margin:0}
+.sg-detail ul{display:flex;flex-wrap:wrap;gap:8px;list-style:none;margin:0 0 12px;padding:0}.sg-detail li{padding:4px 12px;border:1px solid var(--line);border-radius:999px;font-size:.82rem;color:var(--fg)}
+.chain-list{margin-top:26px}.chain-list>summary{cursor:pointer;color:var(--mute);margin-bottom:14px}.chain-list>summary:hover{color:var(--fg)}
+.sg-detail .sg-io{display:flex;flex-wrap:wrap;gap:6px 16px;margin:0 0 12px;font-size:.85rem}
+@media(max-width:720px){
+  /* su telefono il pannello resta in basso nello schermo mentre scorri lo schema */
+  .sg-detail{position:sticky;bottom:10px;z-index:6;max-height:44vh;overflow:auto;padding:14px 16px;box-shadow:0 -10px 30px -10px #000}
+  .sg-detail h3{font-size:1.1rem}
+}
+
+/* sfondo Topography (React Bits) dietro l'intestazione della wiki */
+.topography-container{position:relative;width:100%;height:100%;overflow:hidden}
+.topography-canvas{display:block;width:100%;height:100%}
+.topo-bg{position:absolute;inset:0;z-index:0;-webkit-mask-image:linear-gradient(100deg,rgba(0,0,0,.28) 0%,rgba(0,0,0,.45) 40%,#000 85%);mask-image:linear-gradient(100deg,rgba(0,0,0,.28) 0%,rgba(0,0,0,.45) 40%,#000 85%)}
+@media(max-width:720px){.topo-bg{-webkit-mask-image:linear-gradient(180deg,rgba(0,0,0,.3),rgba(0,0,0,.5) 45%,#000 100%);mask-image:linear-gradient(180deg,rgba(0,0,0,.3),rgba(0,0,0,.5) 45%,#000 100%)}}
+.whero>*:not(.topo-bg){position:relative;z-index:1;pointer-events:none}
+.whero a{pointer-events:auto}

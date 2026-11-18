@@ -2,10 +2,11 @@ import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import { cache } from "react";
 import { prisma } from "./db";
+import { sharedDomain } from "./cookie-domain";
 
 // Sessione degli amministratori (tabella "admins"). Il cookie contiene l'id e la versione di sessione:
 // cambiando la password la versione sale e le sessioni vecchie smettono di valere.
-const COOKIE = "argh_admin";
+const COOKIE = "argh_admin_session"; // condiviso tra argh.space e wiki.argh.space (vedi cookie-domain)
 const key = () => {
   const s = process.env.AUTH_SECRET;
   if (!s || s.length < 32) throw new Error("AUTH_SECRET mancante o troppo corto (min 32 caratteri)");
@@ -18,11 +19,11 @@ export async function createSession(adminId: number) {
     .setProtectedHeader({ alg: "HS256" }).setExpirationTime("7d").sign(key());
   (await cookies()).set(COOKIE, token, {
     httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production",
-    path: "/", maxAge: 60 * 60 * 24 * 7,
+    path: "/", maxAge: 60 * 60 * 24 * 7, domain: await sharedDomain(),
   });
   await prisma.admin.update({ where: { id: adminId }, data: { lastLoginAt: new Date() } }).catch(() => {});
 }
-export async function destroySession() { (await cookies()).delete(COOKIE); }
+export async function destroySession() { (await cookies()).delete({ name: COOKIE, path: "/", domain: await sharedDomain() }); }
 
 /** Amministratore collegato (verificato sul database) oppure null. Calcolato una volta per richiesta. */
 export const currentAdmin = cache(async () => {

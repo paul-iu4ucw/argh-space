@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Activity, Cpu, Radio, Clock, Waves, Construction } from "lucide-react";
+import { Cpu, Radio, Clock, Construction } from "lucide-react";
 import { DashShell } from "./shell";
 import { getPrefs } from "@/lib/dash-store";
 import { fmtDateTime, fmtFreq, fmtTemp, fmtTime, fmtUptime, hour12, tzLabel, tzName } from "@/lib/dash-prefs";
@@ -7,8 +7,10 @@ import { getContent } from "@/lib/i18n";
 import { prisma } from "@/lib/db";
 import { isAdmin } from "@/lib/auth";
 import { currentUser } from "@/lib/user-auth";
-import { STALE_MIN, stationSummary } from "@/lib/rfi";
-import { HeatMap, LineChart, clsColor } from "./charts";
+import { STALE_MIN, stationSummary, trend } from "@/lib/rfi";
+import { HeatMap, clsColor } from "./charts";
+import { RfiBoard, type Series } from "./rfi-board";
+import { BarList } from "./bar-list";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -24,12 +26,13 @@ const SOON = {
 
 const T = {
   it: {
+    changeHint: "Variazione nel periodo", inBandShort: "In banda", marginShort: "Margine",
     nav: { status: "Stato attuale", trend: "Andamento", heat: "Orari più puliti", windows: "Finestre pulite e salute", signals: "Segnali ricorrenti", legend: "Come leggere l'indice" },
     title: "Interferenze RF", intro: "Dati in tempo reale delle stazioni di monitoraggio A.R.G.H. nella banda dell'idrogeno neutro (1400–1427 MHz). Pubblici, senza registrazione.",
     none: "Nessuna stazione attiva per ora.", noData: "Nessun rapporto ricevuto ancora.", online: "Online", offline: "Non raggiungibile", index: "Indice di qualità", cls: "Classe",
     updated: "Ultimo rapporto", occBand: "Occupazione della banda", occHi: "Finestra riga H I", noise: "Aumento del rumore", days7: "7 giorni", days30: "30 giorni",
     trend: "Andamento dell'indice di qualità", trendHi: "Occupazione della finestra H I", heat: "Quando la banda è più pulita", heatNote: "Media degli ultimi 30 giorni (fuso orario dalle impostazioni). Verde = pulito, rosso = disturbato, grigio = nessun dato.",
-    sig: "Segnali ricorrenti", sigNote: "Frequenze che compaiono più spesso tra i segnali principali negli ultimi 30 giorni.", freq: "Frequenza (MHz)", times: "Rapporti", avgOcc: "Occupazione media", maxEx: "Max sopra il fondo", inBand: "In banda protetta", yes: "Sì", no: "No (margine)",
+    sig: "Segnali ricorrenti", sigNote: "Frequenze che compaiono più spesso tra i segnali principali negli ultimi 30 giorni. La barra è l'occupazione media: in ambra i segnali dentro la banda protetta.", freq: "Frequenza (MHz)", times: "Rapporti", avgOcc: "Occupazione media", maxEx: "Max sopra il fondo", inBand: "In banda protetta", yes: "Sì", no: "No (margine)",
     clean: "Finestre pulite (ultime 24 ore)", cleanNote: "Periodi di classe A: i migliori momenti per osservare la riga H I.", cleanNone: "Nessun periodo di classe A nelle ultime 24 ore.",
     health: "Salute della stazione", cpu: "Temperatura CPU", uptime: "Uptime", legend: "Come leggere l'indice",
     classes: [["A", "90–100", "Sito pulito: osservazioni H I senza restrizioni"], ["B", "75–90", "Interferenze occasionali: osservazioni possibili"], ["C", "50–75", "Interferenze frequenti: meglio pianificare"], ["D", "0–50", "Sito disturbato: osservazioni sconsigliate"]],
@@ -37,6 +40,7 @@ const T = {
     days: ["Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom"], tip: (d: string, h: number, q: number | null, n: number) => `${d} ${h}:00 · ${q === null ? "nessun dato" : `indice ${q.toFixed(0)} (${n} rapporti)`}`, locale: "it-IT", hours: "h", position: "Posizione (±1 km)",
   },
   en: {
+    changeHint: "Change over the period", inBandShort: "In band", marginShort: "Margin",
     nav: { status: "Current status", trend: "Trend", heat: "Cleanest hours", windows: "Clean windows and health", signals: "Recurring signals", legend: "How to read the index" },
     title: "RF interference", intro: "Real-time data from the A.R.G.H. monitoring stations in the neutral-hydrogen band (1400–1427 MHz). Public, no sign-up needed.",
     none: "No active station yet.", noData: "No report received yet.", online: "Online", offline: "Unreachable", index: "Quality index", cls: "Class",
@@ -76,6 +80,10 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
   const stations = await prisma.rfiStation.findMany({ where: { active: true }, orderBy: { stationId: "asc" } }).catch(() => []);
   const st = stations.find((s) => s.stationId === q.station) ?? stations[0];
   const sum = st ? await stationSummary(st, days, tzName(prefs)).catch(() => null) : null;
+  // andamento di tutte le stazioni attive (la selezionata per prima): il grafico le confronta
+  const ordered = st ? [st, ...stations.filter((x) => x.id !== st.id)].slice(0, 4) : [];
+  const trends = await Promise.all(ordered.map((x) => (x.id === st?.id && sum ? Promise.resolve(sum.trend) : trend(x.id, days).catch(() => ({ bucket: "hour" as const, points: [] })))));
+  const series: Series[] = ordered.map((x, i) => ({ id: x.stationId, name: x.name, points: trends[i].points.map((p) => ({ t: new Date(p.t).toISOString(), q: p.qualityIndex, band: p.occupancyProtectedPct, hi: p.occupancyHiWindowPct, noise: p.noiseRiseDb })) }));
   const fmt = (d: Date | null | undefined) => fmtDateTime(d, prefs, L.locale);
   const href = (s: string, d: number) => `/dashboard?station=${s}&days=${d}`;
   const latest = sum?.status.latest;
@@ -95,25 +103,20 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
                 <h2><Radio size={18} /> {st.name} <span className={`badge ${sum.status.reachable ? "ok" : "draft"}`}>{sum.status.reachable ? L.online : L.offline}</span></h2>
                 <p className="meta">{L.updated}: {fmt(sum.status.lastSeenAt)}{sum.station.lat !== null && ` · ${L.position}: ${sum.station.lat}, ${sum.station.lon}`}{!sum.status.reachable && ` · >${STALE_MIN} min`}</p>
               </div>
-              {latest ? (
-                <div className="dsh-kpis">
-                  <div className="dsh-kpi big"><span className="rfi-cls" style={{ background: clsColor(latest.qualityClass) }}>{latest.qualityClass}</span><b>{n1(latest.qualityIndex)}</b><small>{L.index}</small></div>
-                  <div className="dsh-kpi"><b>{n1(latest.occupancyProtectedPct, "%")}</b><small>{L.occBand}</small></div>
-                  <div className="dsh-kpi"><b>{n1(latest.occupancyHiWindowPct, "%")}</b><small>{L.occHi}</small></div>
-                  <div className="dsh-kpi"><b>{n1(latest.noiseRiseDb, " dB")}</b><small>{L.noise}</small></div>
-                </div>
-              ) : <p className="meta">{L.noData}</p>}
+              {!latest && <p className="meta">{L.noData}</p>}
             </section>
 
             <div className="dsh-tabs">
               <a href={href(st.stationId, 7)} className={`btn small ${days === 7 ? "" : "ghost"}`}>{L.days7}</a>
               <a href={href(st.stationId, 30)} className={`btn small ${days === 30 ? "" : "ghost"}`}>{L.days30}</a>
             </div>
-            <div className="dsh-grid" id="andamento">
-              <section className="dsh-card"><h3><Activity size={16} /> {L.trend}</h3>
-                <LineChart pts={sum.trend.points.map((p) => ({ t: new Date(p.t), v: p.qualityIndex }))} max={100} unit="" bands label={L.trend} locale={L.locale} tz={tzName(prefs)} hour12={hour12(prefs)} /></section>
-              <section className="dsh-card"><h3><Waves size={16} /> {L.trendHi}</h3>
-                <LineChart pts={sum.trend.points.map((p) => ({ t: new Date(p.t), v: p.occupancyHiWindowPct }))} unit="%" color="var(--acc2)" label={L.trendHi} locale={L.locale} tz={tzName(prefs)} hour12={hour12(prefs)} /></section>
+            <div id="andamento">
+              <RfiBoard
+                series={series} bucket={sum.trend.bucket as "hour" | "day"} locale={L.locale} tz={tzName(prefs)} hour12={hour12(prefs)}
+                latest={latest ? { cls: latest.qualityClass, values: { q: latest.qualityIndex, band: latest.occupancyProtectedPct, hi: latest.occupancyHiWindowPct, noise: latest.noiseRiseDb } } : null}
+                labels={{ metrics: { q: L.index, band: L.occBand, hi: L.occHi, noise: L.noise }, change: L.changeHint, noData: L.noData, reports: L.times }}
+                clsColors={{ A: clsColor("A"), B: clsColor("B"), C: clsColor("C"), D: clsColor("D") }}
+              />
             </div>
 
             <section className="dsh-card" id="orari"><h3><Clock size={16} /> {L.heat}</h3><p className="meta">{L.heatNote}</p>
@@ -129,12 +132,8 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
             </div>
 
             <section className="dsh-card" id="segnali"><h3>{L.sig}</h3><p className="meta">{L.sigNote}</p>
-              {sum.recurringSignals.length === 0 ? <p>—</p> : (
-                <div className="tablewrap"><table>
-                  <thead><tr><th>{L.freq}</th><th>{L.times}</th><th>{L.avgOcc}</th><th>{L.maxEx}</th><th>{L.inBand}</th></tr></thead>
-                  <tbody>{sum.recurringSignals.map((s) => <tr key={s.freqMhz}><td>{fmtFreq(s.freqMhz, prefs)}</td><td>{s.reports}</td><td>{n1(s.avgOccupancyPct, "%")}</td><td>{n1(s.maxExcessDb, " dB")}</td><td>{s.inProtectedBand ? L.yes : L.no}</td></tr>)}</tbody>
-                </table></div>
-              )}</section>
+              <BarList items={sum.recurringSignals.map((x) => ({ key: x.freqMhz, label: fmtFreq(x.freqMhz, prefs), pct: x.avgOccupancyPct ?? 0, inBand: x.inProtectedBand, detail: `${n1(x.avgOccupancyPct, "%")} · ${x.reports} ${L.times.toLowerCase()} · ${L.maxEx.toLowerCase()} ${n1(x.maxExcessDb, " dB")}` }))} badgeIn={L.inBandShort} badgeOut={L.marginShort} />
+            </section>
           </>
         )}
 

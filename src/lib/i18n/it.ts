@@ -203,9 +203,9 @@ const it = {
       list: [
         { name: "lang", purpose: "Ricorda la lingua scelta (italiano o inglese) o rilevata dal browser.", duration: "12 mesi", type: "Tecnico · preferenza · prima parte" },
         { name: "cookie_consent", purpose: "Ricorda la tua scelta sui cookie statistici (accetta o rifiuta), per non riproporti il banner.", duration: "6 mesi", type: "Tecnico · prima parte" },
-        { name: "argh_user", purpose: "Mantiene la sessione dell'account dei lettori registrati, per poter commentare. Viene creato solo dopo l'accesso o la conferma dell'e-mail.", duration: "30 giorni", type: "Tecnico · sessione · prima parte" },
+        { name: "argh_user_session", purpose: "Mantiene la sessione dell'account dei lettori registrati, per poter commentare. Viene creato solo dopo l'accesso o la conferma dell'e-mail.", duration: "30 giorni", type: "Tecnico · sessione · prima parte" },
         { name: "argh_2fa_pending", purpose: "Ricorda per pochi minuti che hai inserito la password giusta, in attesa del codice dell'autenticazione a due fattori. Viene creato solo a chi ha attivato il 2FA.", duration: "5 minuti", type: "Tecnico · sicurezza · prima parte" },
-        { name: "argh_admin", purpose: "Mantiene la sessione di accesso. Viene creato solo dagli amministratori dopo il login e non è impostato ai visitatori.", duration: "7 giorni", type: "Tecnico · sessione · prima parte" },
+        { name: "argh_admin_session", purpose: "Mantiene la sessione di accesso. Viene creato solo dagli amministratori dopo il login e non è impostato ai visitatori.", duration: "7 giorni", type: "Tecnico · sessione · prima parte" },
         { name: "dash_prefs", purpose: "Ricorda le preferenze della dashboard (unità di misura, fuso orario) se le modifichi senza aver effettuato l'accesso. Viene creato solo quando salvi le preferenze.", duration: "12 mesi", type: "Tecnico · preferenza · prima parte" },
         { name: "_ga", purpose: "Google Analytics: distingue i visitatori in forma statistica per misurare le visite al sito. Solo con il tuo consenso.", duration: "2 anni", type: "Statistico · terza parte (Google)" },
         { name: "_ga_<ID>", purpose: "Google Analytics: mantiene lo stato della sessione di navigazione. Solo con il tuo consenso.", duration: "2 anni", type: "Statistico · terza parte (Google)" },

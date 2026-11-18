@@ -2,9 +2,10 @@ import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import { randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
 import { prisma } from "./db";
+import { sharedDomain } from "./cookie-domain";
 
 // Account dei lettori della wiki (servono per commentare). Separati dall'admin.
-const COOKIE = "argh_user";
+const COOKIE = "argh_user_session"; // condiviso tra argh.space e wiki.argh.space (vedi cookie-domain)
 const key = () => {
   const s = process.env.AUTH_SECRET;
   if (!s || s.length < 32) throw new Error("AUTH_SECRET mancante o troppo corto (min 32 caratteri)");
@@ -28,10 +29,10 @@ export async function createUserSession(uid: number) {
   const token = await new SignJWT({ uid, v }).setProtectedHeader({ alg: "HS256" }).setExpirationTime("30d").sign(key());
   (await cookies()).set(COOKIE, token, {
     httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production",
-    path: "/", maxAge: 60 * 60 * 24 * 30,
+    path: "/", maxAge: 60 * 60 * 24 * 30, domain: await sharedDomain(),
   });
 }
-export async function destroyUserSession() { (await cookies()).delete(COOKIE); }
+export async function destroyUserSession() { (await cookies()).delete({ name: COOKIE, path: "/", domain: await sharedDomain() }); }
 
 /** Utente collegato (verificato sul database) oppure null. */
 export async function currentUser() {

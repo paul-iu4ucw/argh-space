@@ -69,10 +69,14 @@ export async function stationStatus(st: { id: number; lastSeenAt: Date | null })
 /** Andamento: indice e occupazione della finestra H I, per ora (7 giorni) o per giorno (30 giorni). */
 export async function trend(stationDbId: number, days: number) {
   const unit = days <= 7 ? "hour" : "day", since = new Date(Date.now() - days * 86400_000);
-  const rows = await prisma.$queryRaw<{ t: Date; q: number; hi: number; n: bigint }[]>`
-    SELECT date_trunc(${unit}, period_start) AS t, AVG(quality_index) AS q, AVG(occupancy_hi_window_pct) AS hi, COUNT(*) AS n
+  const rows = await prisma.$queryRaw<{ t: Date; q: number; hi: number; band: number; noise: number; n: bigint }[]>`
+    SELECT date_trunc(${unit}, period_start) AS t, AVG(quality_index) AS q, AVG(occupancy_hi_window_pct) AS hi,
+           AVG(occupancy_protected_pct) AS band, AVG(noise_rise_db) AS noise, COUNT(*) AS n
     FROM rfi_reports WHERE station_id=${stationDbId} AND valid AND period_start >= ${since} GROUP BY 1 ORDER BY 1`;
-  return { bucket: unit, points: rows.map((r) => ({ t: r.t, qualityIndex: num(r.q), occupancyHiWindowPct: num(r.hi), reports: Number(r.n) })) };
+  return {
+    bucket: unit,
+    points: rows.map((r) => ({ t: r.t, qualityIndex: num(r.q), occupancyHiWindowPct: num(r.hi), occupancyProtectedPct: num(r.band), noiseRiseDb: num(r.noise), reports: Number(r.n) })),
+  };
 }
 
 /** Mappa oraria: occupazione media per ora del giorno e giorno della settimana (nel fuso indicato, di norma l'ora italiana; 0 = domenica). */
