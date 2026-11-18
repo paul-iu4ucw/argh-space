@@ -1,5 +1,6 @@
 import { Logo } from "./logo";
-import { LangSelect } from "./lang-select";
+import { PublicNav } from "./public-nav";
+import { CookieSettings } from "./cookie-settings";
 import { getContent } from "@/lib/i18n";
 
 export async function LegalPage({ kind }: { kind: "privacy" | "cookies" }) {
@@ -10,7 +11,7 @@ export async function LegalPage({ kind }: { kind: "privacy" | "cookies" }) {
     <>
       <header className="nav">
         <a href="/" className="brand"><Logo size={36} /><span>{t.site.name}</span></a>
-        <nav><LangSelect current={lang} label={t.ui.langLabel} /></nav>
+        <PublicNav />
       </header>
       <main className="legal">
         <a href="/" className="meta">{t.legal.back}</a>
@@ -35,7 +36,7 @@ export async function LegalPage({ kind }: { kind: "privacy" | "cookies" }) {
           </section>
         ))}
         <p className="meta">
-          <a href="/privacy">{t.legal.footer.privacy}</a> · <a href="/cookie">{t.legal.footer.cookies}</a>
+          <a href="/privacy">{t.legal.footer.privacy}</a> · <a href="/cookie">{t.legal.footer.cookies}</a> · <CookieSettings label={t.legal.footer.settings} />
         </p>
       </main>
     </>

@@ -3,10 +3,12 @@ import { Icon } from "./icons";
 import { Reveal } from "./reveal";
 import { HiChart } from "./hichart";
 import { SiteNav } from "./site-nav";
+import { currentUser } from "@/lib/user-auth";
+import { NewsSection } from "./news-section";
+import { CookieSettings } from "./cookie-settings";
 import { JsonLd } from "./jsonld";
 import { siteUrl, wikiOrigin } from "@/lib/seo";
 import { getContent, wikiUrl } from "@/lib/i18n";
-import { toolsSlug, hiSimSlug } from "@/lib/i18n/tools";
 
 function Head({ eyebrow, title, sub }: { eyebrow: string; title: string; sub?: string }) {
   return (
@@ -21,6 +23,7 @@ function Head({ eyebrow, title, sub }: { eyebrow: string; title: string; sub?: s
 export default async function Home() {
   const { lang, t: c } = await getContent();
   const site = c.site;
+  const me = await currentUser().catch(() => null);
   const ld = {
     "@context": "https://schema.org",
     "@graph": [
@@ -45,6 +48,9 @@ export default async function Home() {
           lang={lang}
           langLabel={c.ui.langLabel}
           wiki={{ href: wikiUrl, label: c.ui.nav.wiki }}
+          dashboard={{ href: "/dashboard", label: "Dashboard" }}
+          user={me ? { name: me.name } : null}
+          spy
           links={[
             { href: "/", label: c.ui.nav.home },
             { href: "#progetto", label: c.ui.nav.project },
@@ -89,6 +95,8 @@ export default async function Home() {
             <Reveal key={s.label} delay={i * 80} className="stat"><b>{s.value}</b><span>{s.label}</span></Reveal>
           ))}
         </section>
+
+        <NewsSection lang={lang} />
 
         <section className="wrap">
           <Head eyebrow={c.whyRadio.eyebrow} title={c.whyRadio.title} sub={c.whyRadio.sub} />
@@ -233,11 +241,6 @@ export default async function Home() {
         </section>
 
         <section className="wrap">
-          <Head eyebrow={c.simulator.eyebrow} title={c.simulator.title} sub={c.simulator.text} />
-          <Reveal><a href={`${wikiUrl}/${toolsSlug[lang]}/${hiSimSlug[lang]}`} className="btn">{c.simulator.cta}</a></Reveal>
-        </section>
-
-        <section className="wrap">
           <Reveal>
             <div className="banner">
               <h2>{c.banner.title}</h2>
@@ -250,7 +253,7 @@ export default async function Home() {
 
       <footer className="foot">
         <span>© {new Date().getFullYear()} {site.name} · {site.full} · {site.place} · <a href={`mailto:${site.email}`}>{site.email}</a></span>
-        <span className="flinks"><a href="/privacy">{c.legal.footer.privacy}</a><a href="/cookie">{c.legal.footer.cookies}</a><a href="/admin">{c.ui.admin}</a></span>
+        <span className="flinks"><a href="/privacy">{c.legal.footer.privacy}</a><a href="/cookie">{c.legal.footer.cookies}</a><CookieSettings label={c.legal.footer.settings} /><a href="/admin">{c.ui.admin}</a></span>
       </footer>
     </>
   );

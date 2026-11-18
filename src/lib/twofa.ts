@@ -81,19 +81,19 @@ export const userStore = (id: number): Store => ({
     } });
   },
 });
-const ADMIN_KEY = "admin_2fa";
-export const adminStore: Store = {
+/** 2FA dell'amministratore: colonne della sua riga in "admins". */
+export const adminStore = (id: number): Store => ({
   async get() {
-    const r = await prisma.setting.findUnique({ where: { key: ADMIN_KEY } });
-    const j = r ? JSON.parse(r.value) : {};
-    return { secret: j.secret ?? null, enabled: !!j.enabled, recovery: j.recovery ?? [], lastStep: j.lastStep ?? 0, fails: j.fails ?? 0, lockUntil: j.lockUntil ? new Date(j.lockUntil) : null };
+    const a = await prisma.admin.findUniqueOrThrow({ where: { id } });
+    return { secret: a.totpSecret, enabled: a.totpEnabled, recovery: a.totpRecovery, lastStep: a.totpLastStep, fails: a.totpFails, lockUntil: a.totpLockUntil };
   },
   async set(p) {
-    const cur = await this.get(), v = JSON.stringify({ ...cur, ...p });
-    await prisma.setting.upsert({ where: { key: ADMIN_KEY }, create: { key: ADMIN_KEY, value: v }, update: { value: v } });
+    await prisma.admin.update({ where: { id }, data: {
+      ...("secret" in p && { totpSecret: p.secret }), ...("enabled" in p && { totpEnabled: p.enabled }), ...("recovery" in p && { totpRecovery: p.recovery }),
+      ...("lastStep" in p && { totpLastStep: p.lastStep }), ...("fails" in p && { totpFails: p.fails }), ...("lockUntil" in p && { totpLockUntil: p.lockUntil }),
+    } });
   },
-};
-export const adminTwoFaEnabled = async () => { try { return (await adminStore.get()).enabled; } catch { return false; } };
+});
 
 /**
  * Controlla un codice a 6 cifre o un codice di recupero.

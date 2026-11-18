@@ -1,8 +1,14 @@
 import type { Metadata, Viewport } from "next";
+import { Play } from "next/font/google";
 import "./globals.css";
 import { getContent } from "@/lib/i18n";
 import { siteUrl } from "@/lib/seo";
 import { CookieBanner } from "./cookie-banner";
+import { AdminFab } from "./admin-fab";
+import { isAdmin } from "@/lib/auth";
+
+// Play: titoli e menu. next/font la scarica in fase di build e la serve dal nostro dominio: nessuna richiesta a Google dal browser.
+const play = Play({ subsets: ["latin", "latin-ext"], weight: ["400", "700"], variable: "--font-play", display: "swap" });
 
 export const viewport: Viewport = { themeColor: "#050816", colorScheme: "dark", width: "device-width", initialScale: 1 };
 
@@ -30,10 +36,12 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const { lang, t } = await getContent();
+  const admin = await isAdmin().catch(() => false);
   return (
-    <html lang={lang} data-scroll-behavior="smooth">
+    <html lang={lang} className={play.variable} data-scroll-behavior="smooth">
       <body>
         {children}
+        {admin && <AdminFab />}
         <CookieBanner {...t.legal.banner} />
       </body>
     </html>

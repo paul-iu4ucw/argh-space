@@ -2,11 +2,11 @@ import { Logo } from "../logo";
 import { WikiNav } from "../wiki-nav";
 import { LangSelect } from "../lang-select";
 import { sectionsWithPages } from "@/lib/db";
-import { isAdmin } from "@/lib/auth";
 import { wikiBase } from "@/lib/wikibase";
 import { getLang } from "@/lib/i18n";
 import { wikiText } from "@/lib/i18n/wiki";
-import { AuthMenu } from "../auth-menu";
+import { UserMenu } from "../user-menu";
+import { CookieSettings } from "../cookie-settings";
 import { MenuToggle } from "../menu-toggle";
 import { currentUser } from "@/lib/user-auth";
 import { toolsNav, toolPaths } from "@/lib/tools";
@@ -27,7 +27,6 @@ export default async function WikiLayout({ children }: { children: React.ReactNo
     title: s.title, slug: s.slug, icon: s.icon, lang: s.lang,
     pages: s.pages.map((p) => ({ title: p.title, slug: p.slug })),
   })).filter((s) => s.pages.length).concat(toolsNav());   // "Strumenti": sezione fissa, non nel database
-  const admin = await isAdmin();
   const me = await currentUser();
   // percorso -> { lingua: percorso della traduzione } (stessa "key"), per cambiare lingua restando sulla stessa pagina
   const all = await sectionsWithPages();
@@ -45,25 +44,31 @@ export default async function WikiLayout({ children }: { children: React.ReactNo
       <header className="nav">
         <Link href={base || "/"} className="brand"><Logo size={34} /><span>A.R.G.H. <em>Wiki</em></span></Link>
         <nav className="anav">
-          <a href={process.env.NEXT_PUBLIC_SITE_URL || "/"}>{T.home}</a>
+          <a href={`${process.env.NEXT_PUBLIC_SITE_URL || ""}/`}>{T.home}</a>
+          <span className="msep" aria-hidden />
+          <a href={`${process.env.NEXT_PUBLIC_SITE_URL || ""}/dashboard`}>Dashboard</a>
+          <a href={base || "/"} className="on" aria-current="page">Wiki</a>
+          <span className="msep" aria-hidden />
           <LangSelect current={lang} label={T.language} alts={alts} home={base || "/"} />
-          <AuthMenu lang={lang} user={me ? { name: me.name } : null} />
-          {admin && <a href="/admin" className="btn small">Admin</a>}
+          <UserMenu lang={lang} user={me ? { name: me.name } : null} />
         </nav>
         <MenuToggle label={T.menu} />
       </header>
       <div className="wiki">
         <WikiNav base={base} sections={nav} defaultLang={lang} labels={labels} extra={<>
-          <a href={process.env.NEXT_PUBLIC_SITE_URL || "/"}>{T.home}</a>
+          <a href={`${process.env.NEXT_PUBLIC_SITE_URL || ""}/`}>{T.home}</a>
+          <span className="msep" aria-hidden />
+          <a href={`${process.env.NEXT_PUBLIC_SITE_URL || ""}/dashboard`}>Dashboard</a>
+          <a href={base || "/"} className="on" aria-current="page">Wiki</a>
+          <span className="msep" aria-hidden />
           <LangSelect current={lang} label={T.language} alts={alts} home={base || "/"} />
-          <AuthMenu lang={lang} user={me ? { name: me.name } : null} />
-          {admin && <a href="/admin" className="btn small">Admin</a>}
+          <UserMenu lang={lang} user={me ? { name: me.name } : null} />
         </>} />
         <main className="doc">{children}</main>
       </div>
       <footer className="foot">
         <span>© {new Date().getFullYear()} A.R.G.H. · Astronomical Radio Ground Hub</span>
-        <span className="flinks"><a href="/privacy">Privacy</a><a href="/cookie">Cookie</a></span>
+        <span className="flinks"><a href="/privacy">Privacy</a><a href="/cookie">Cookie</a><CookieSettings label={lang === "en" ? "Cookie settings" : "Impostazioni cookie"} /></span>
       </footer>
     </>
   );

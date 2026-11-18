@@ -1,10 +1,12 @@
 "use server";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { checkCredentials, createSession, destroySession, isAdmin } from "./auth";
+import { createSession, destroySession, isAdmin } from "./auth";
+import { verifyPassword } from "./user-auth";
 import { prisma, slugify } from "./db";
 import { clean, toHtml } from "./content";
-import { adminStore, adminTwoFaEnabled, checkCode, clearPending, readPending, setPending } from "./twofa";
+import { dropUserPrefs } from "./dash-store";
+import { adminStore, checkCode, clearPending, readPending, setPending } from "./twofa";
 
 const RESERVED = ["admin", "wiki", "api", "privacy", "cookie", "login", "strumenti", "tools", "account"];
 
@@ -15,23 +17,26 @@ const lang = (f: FormData) => (str(f, "lang") === "en" ? "en" : "it");
 const refresh = () => { revalidatePath("/wiki", "layout"); revalidatePath("/admin", "layout"); };
 
 export type LoginState = { error?: string; step?: "code" } | null;
+/** Accesso admin con email e password (e codice 2FA, se attivo). */
 export async function login(_: LoginState, f: FormData): Promise<LoginState> {
   await new Promise((r) => setTimeout(r, 600)); // rallenta i tentativi
-  if (!checkCredentials(str(f, "user"), String(f.get("pass") ?? ""))) return { error: "Credenziali non valide" };
-  if (await adminTwoFaEnabled()) { await setPending("admin"); return { step: "code" }; }
-  await createSession();
+  const a = await prisma.admin.findUnique({ where: { email: str(f, "email").toLowerCase() } });
+  if (!a || !verifyPassword(String(f.get("pass") ?? ""), a.passwordHash)) return { error: "Credenziali non valide" };
+  if (!a.emailVerifiedAt) return { error: "Email non ancora confermata: apri il link ricevuto" };
+  if (a.totpEnabled) { await setPending("admin", a.id); return { step: "code" }; }
+  await createSession(a.id);
   redirect("/admin");
 }
 /** Secondo passo del login admin con 2FA attivo. */
 export async function loginCode(_: LoginState, f: FormData): Promise<LoginState> {
   await new Promise((r) => setTimeout(r, 600));
   const p = await readPending();
-  if (!p || p.kind !== "admin") return { error: "Sessione scaduta, ricomincia" };
-  const r = await checkCode(adminStore, String(f.get("code") ?? ""));
+  if (!p || p.kind !== "admin" || !p.uid) return { error: "Sessione scaduta, ricomincia" };
+  const r = await checkCode(adminStore(p.uid), String(f.get("code") ?? ""));
   if (r === "locked") return { step: "code", error: "Troppi tentativi: riprova tra 15 minuti" };
   if (r !== "ok") return { step: "code", error: "Codice non corretto" };
   await clearPending();
-  await createSession();
+  await createSession(p.uid);
   redirect("/admin");
 }
 export async function logout() { await destroySession(); redirect("/admin/login"); }
@@ -173,6 +178,7 @@ export async function setCommentStatus(f: FormData) {
 }
 export async function adminDeleteUser(f: FormData) {
   await guard();
+  await dropUserPrefs([num(f, "id")]).catch(() => {});
   await prisma.user.delete({ where: { id: num(f, "id") } }).catch(() => {});
   revUsers();
 }

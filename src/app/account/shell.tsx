@@ -1,15 +1,18 @@
 import Link from "next/link";
-import { ArrowLeft, MessageSquareText, CalendarHeart, ShieldCheck } from "lucide-react";
+import { MessageSquareText, CalendarHeart, ShieldCheck } from "lucide-react";
 import { Logo } from "../logo";
 import { commentText } from "@/lib/i18n/comments";
+import { getContent } from "@/lib/i18n";
+import { PublicNav } from "../public-nav";
 
-/** Cornice delle pagine account: fuori dalla wiki, con il ritorno in alto. */
-export function AccountShell({ lang, back, children }: { lang: "it" | "en"; back: string; children: React.ReactNode }) {
+/** Cornice delle pagine account: stesso menu del sito, con l'icona utente evidenziata. */
+export async function AccountShell({ children }: { lang?: "it" | "en"; back?: string; children: React.ReactNode }) {
+  const { lang, t } = await getContent();
   return (
     <>
       <header className="nav">
-        <Link href={back} className="backlink"><ArrowLeft size={17} /> {commentText[lang].backWiki}</Link>
-        <span className="brand"><Logo size={34} /><span>A.R.G.H.</span></span>
+        <a href="/" className="brand"><Logo size={36} /><span>{t.site.name}</span></a>
+        <PublicNav userActive />
       </header>
       <main className="acctmain" lang={lang}>{children}</main>
     </>

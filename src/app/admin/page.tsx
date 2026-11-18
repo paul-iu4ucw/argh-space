@@ -1,21 +1,22 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { BookOpen, MessageSquare, ShieldAlert, ShieldCheck, Users } from "lucide-react";
-import { isAdmin } from "@/lib/auth";
+import { currentAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { adminTwoFaEnabled } from "@/lib/twofa";
+import { adminStore } from "@/lib/twofa";
 import { fmtDate } from "@/lib/wikibase";
 
 export const dynamic = "force-dynamic";
 
 export default async function Dashboard() {
-  if (!(await isAdmin())) redirect("/admin/login");
+  const admin = await currentAdmin();
+  if (!admin) redirect("/admin/login");
   const [sec, pages, drafts, users, unverified, comments, lastComments, lastUsers, twofa] = await Promise.all([
     prisma.section.count(), prisma.page.count(), prisma.page.count({ where: { published: false } }),
     prisma.user.count(), prisma.user.count({ where: { emailVerifiedAt: null } }), prisma.comment.count({ where: { status: "pending" } }),
     prisma.comment.findMany({ orderBy: { createdAt: "desc" }, take: 5, include: { user: { select: { name: true } }, page: { select: { title: true, slug: true, section: { select: { slug: true } } } } } }),
     prisma.user.findMany({ orderBy: { createdAt: "desc" }, take: 5 }),
-    adminTwoFaEnabled(),
+    adminStore(admin.id).get().then((r) => r.enabled),
   ]);
   const stats = [
     { v: sec, l: "Gruppi" }, { v: pages, l: "Pagine" }, { v: drafts, l: "Bozze" },

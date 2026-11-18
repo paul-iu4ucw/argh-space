@@ -1,7 +1,7 @@
 "use server";
 import QRCode from "qrcode";
 import { revalidatePath } from "next/cache";
-import { isAdmin } from "./auth";
+import { currentAdmin } from "./auth";
 import { currentUser } from "./user-auth";
 import { prisma } from "./db";
 import { adminStore, checkCode, encrypt, newRecoveryCodes, newSecret, otpauthUrl, userStore, type Store } from "./twofa";
@@ -10,7 +10,7 @@ export type Scope = "user" | "admin";
 
 /** Archivio e etichetta dell'account che sta facendo la richiesta (null se non autorizzato). */
 async function target(scope: Scope): Promise<{ store: Store; label: string } | null> {
-  if (scope === "admin") return (await isAdmin()) ? { store: adminStore, label: process.env.ADMIN_USER || "admin" } : null;
+  if (scope === "admin") { const a = await currentAdmin(); return a ? { store: adminStore(a.id), label: a.email } : null; }
   const u = await currentUser();
   if (!u) return null;
   const full = await prisma.user.findUnique({ where: { id: u.id }, select: { email: true } });

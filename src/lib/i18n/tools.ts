@@ -18,7 +18,7 @@ export const toolsText = {
       metaDesc: "Calcolatore e simulatore didattico: dal diametro della parabola al beam a 21 cm, al numero di puntamenti e ai tempi di scansione, con mappa HI della Via Lattea e di Andromeda.",
       badge: "Modello didattico HI · 21 cm",
       fieldTitle: "Campo da osservare",
-      fields: { mw: "Via Lattea · tutto il cielo", m31: "Andromeda · M31" },
+      fields: { mw: "Via Lattea · tutto il cielo", m31: "Andromeda · M31", mc: "Nubi di Magellano", gc: "Centro galattico", cyg: "Cigno" },
       mwDesc: "Mappa HI all-sky (HI4PI) riproiettata in coordinate galattiche (l, b). La fascia centrale è il disco della Via Lattea; in basso a destra si vedono le Nubi di Magellano.",
       m31Desc: "Campo di 6° × 3° centrato su Andromeda. Modello schematico (disco molto inclinato, nucleo, anello, bracci e due satelliti): non è un dato osservativo.",
       factsMw: [
@@ -26,6 +26,28 @@ export const toolsText = {
         "La mappa integra tutte le velocità: i canali Doppler non ci sono.",
         "Con un beam di ~6° il disco galattico resta ben visibile, mentre le Nubi di Magellano perdono i dettagli ma restano due macchie distinte.",
       ],
+      factsCut: {
+        mc: [
+          "La Grande Nube (LMC) misura circa 10° e la Piccola (SMC) circa 5° in ottico: in HI, con il Ponte che le unisce, l'insieme riempie quasi tutto il campo.",
+          "Con un beam di ~6° la Grande Nube diventa una macchia unica e la Piccola si fonde con il Ponte: per separarle serve un beam sotto ~3°.",
+          "Sono le due galassie più vicine che si osservano in HI con una piccola parabola: a differenza di Andromeda, riempiono più beam.",
+        ],
+        gc: [
+          "Il centro galattico sta a l = 0°: la fascia luminosa è il disco della Via Lattea visto di taglio, molto più alto del beam.",
+          "Con un beam di ~6° la struttura fine del disco (nubi, bracci) si fonde in una banda continua.",
+          "Qui l'HI è intenso e il segnale è alto: un buon posto per provare il rapporto segnale/rumore a parabole piccole.",
+        ],
+        cyg: [
+          "La regione del Cigno (l ≈ 80°) è un tratto del disco galattico con molto gas lungo la linea di vista (braccio di Orione e bracci più esterni).",
+          "La mappa integra tutte le velocità: gas di bracci diversi si sovrappone nella stessa direzione, e solo la spettroscopia Doppler potrebbe separarlo.",
+          "Con un beam di ~6° si distinguono solo le variazioni su scale di diversi gradi.",
+        ],
+      },
+      cutDesc: {
+        mc: "Campo di 48° × 24° (l ≈ 291°, b ≈ −38°) ritagliato dalla mappa HI4PI: Grande e Piccola Nube di Magellano con il Ponte. Dati reali, intensità relativa.",
+        gc: "Campo di 60° × 30° centrato sul centro galattico (l = 0°, b = 0°), ritagliato dalla mappa HI4PI. Dati reali, intensità relativa.",
+        cyg: "Campo di 48° × 24° sulla regione del Cigno (l ≈ 80°, b = 0°), ritagliato dalla mappa HI4PI. Dati reali, intensità relativa.",
+      },
       factsM31: [
         "L'estensione ottica di M31 è circa 3° × 1°; in HI il disco si estende più in là.",
         "Con un beam di diversi gradi la galassia appare come una sorgente puntiforme, senza struttura.",
@@ -78,7 +100,7 @@ export const toolsText = {
         ["Drift scan", "Il fascio di una parabola ferma segue un cerchio a declinazione costante e percorre tutte le ascensioni rette in un giorno siderale (23 h 56 min). Il cielo scorre a 15,04°/ora, quindi il fascio impiega beam / (15,04 · cos δ) a passare su una sorgente. Si imposta l'elevazione con alt = 90° − latitudine + δ (latitudine 44,7°, minimo 10° sull'orizzonte → δ ≥ −35,3°, circa il 79% del cielo)."],
         ["Misura e rumore", "A ogni puntamento si legge il valore del cielo sfocato e si somma rumore gaussiano indipendente, con sigma ∝ 1/√(tempo di integrazione): raddoppiare il tempo lo riduce del 29%. Nel drift scan il tempo è quello in cui il fascio resta su un campione (passo / (15,04° · cos δ)). La mappa è ricostruita dai soli puntamenti: con passo grosso si vedono i blocchi."],
       ] as [string, string][],
-      limits: "Limiti: il modello di M31 è schematico, la mappa della Via Lattea è un'intensità relativa, il rumore scala come 1/√t (equazione del radiometro) ma non è calibrato in kelvin e i tempi non includono gli spostamenti della montatura. Nel drift scan non sono simulati calibrazione giornaliera, Sole, interferenze e correzione Doppler. Serve per capire, non per pianificare osservazioni.",
+      limits: "Limiti: il modello di M31 è schematico, le mappe della Via Lattea e dei suoi ritagli mostrano un'intensità relativa, il rumore scala come 1/√t (equazione del radiometro) ma non è calibrato in kelvin e i tempi non includono gli spostamenti della montatura. Nel drift scan non sono simulati calibrazione giornaliera, Sole, interferenze e correzione Doppler. Serve per capire, non per pianificare osservazioni.",
       credit: "Mappa all-sky: HI4PI Collaboration (2016), A&A 594, A116.",
       units: { deg: "°", m: "m", cm: "cm", s: "s", h: "h", min: "min", dbi: "dBi" },
       loading: "Carico la mappa…",
@@ -121,7 +143,7 @@ export const toolsText = {
       metaDesc: "Educational calculator and simulator: from dish diameter to the 21 cm beam, number of pointings and scan time, with HI maps of the Milky Way and Andromeda.",
       badge: "Educational HI model · 21 cm",
       fieldTitle: "Field to observe",
-      fields: { mw: "Milky Way · all sky", m31: "Andromeda · M31" },
+      fields: { mw: "Milky Way · all sky", m31: "Andromeda · M31", mc: "Magellanic Clouds", gc: "Galactic centre", cyg: "Cygnus" },
       mwDesc: "All-sky HI map (HI4PI) reprojected to galactic coordinates (l, b). The central band is the Milky Way disc; the Magellanic Clouds show at lower right.",
       m31Desc: "6° × 3° field centred on Andromeda. Schematic model (highly inclined disc, core, ring, arms and two satellites): not observational data.",
       factsMw: [
@@ -129,6 +151,28 @@ export const toolsText = {
         "The map integrates all velocities: there are no Doppler channels.",
         "With a ~6° beam the Galactic disc stays clear, while the Magellanic Clouds lose their detail but stay two distinct blobs.",
       ],
+      factsCut: {
+        mc: [
+          "The Large Cloud (LMC) spans about 10° and the Small Cloud (SMC) about 5° optically: in HI, with the Bridge joining them, the pair fills most of the field.",
+          "With a ~6° beam the Large Cloud becomes a single blob and the Small Cloud merges with the Bridge: separating them takes a beam below ~3°.",
+          "They are the closest galaxies you can see in HI with a small dish: unlike Andromeda, they span several beams.",
+        ],
+        gc: [
+          "The Galactic centre is at l = 0°: the bright band is the Milky Way disc seen edge-on, much taller than the beam.",
+          "With a ~6° beam the fine structure of the disc (clouds, arms) blends into one continuous band.",
+          "HI is strong here, so the signal is high: a good place to test signal-to-noise with small dishes.",
+        ],
+        cyg: [
+          "The Cygnus region (l ≈ 80°) is a stretch of the Galactic disc with plenty of gas along the line of sight (Orion arm and outer arms).",
+          "The map integrates all velocities: gas from different arms overlaps in the same direction, and only Doppler spectroscopy could separate it.",
+          "With a ~6° beam you only see variations on scales of several degrees.",
+        ],
+      },
+      cutDesc: {
+        mc: "48° × 24° field (l ≈ 291°, b ≈ −38°) cut from the HI4PI map: Large and Small Magellanic Clouds with the Bridge. Real data, relative intensity.",
+        gc: "60° × 30° field centred on the Galactic centre (l = 0°, b = 0°), cut from the HI4PI map. Real data, relative intensity.",
+        cyg: "48° × 24° field on the Cygnus region (l ≈ 80°, b = 0°), cut from the HI4PI map. Real data, relative intensity.",
+      },
       factsM31: [
         "M31's optical extent is about 3° × 1°; in HI the disc reaches further out.",
         "With a beam of several degrees the galaxy looks like a point source, with no structure.",
@@ -181,7 +225,7 @@ export const toolsText = {
         ["Drift scan", "The beam of a fixed dish follows a circle of constant declination and sweeps all right ascensions in one sidereal day (23 h 56 min). The sky moves at 15.04°/hour, so the beam takes beam / (15.04 · cos δ) to cross a source. Elevation is set by alt = 90° − latitude + δ (latitude 44.7°, minimum 10° above the horizon → δ ≥ −35.3°, about 79% of the sky)."],
         ["Measurement and noise", "At each pointing the blurred sky value is read and independent Gaussian noise is added, with sigma ∝ 1/√(integration time): doubling the time cuts it by 29%. In drift scan the time is how long the beam stays on a sample (step / (15.04° · cos δ)). The map is rebuilt from the pointings alone: with a coarse step you see blocks."],
       ] as [string, string][],
-      limits: "Limits: the M31 model is schematic, the Milky Way map is a relative intensity, the noise scales as 1/√t (radiometer equation) but is not calibrated in kelvin and the times exclude mount slewing. The drift scan does not simulate daily calibration, the Sun, interference or Doppler correction. It is for understanding, not for planning observations.",
+      limits: "Limits: the M31 model is schematic, the Milky Way maps and their cut-outs show a relative intensity, the noise scales as 1/√t (radiometer equation) but is not calibrated in kelvin and the times exclude mount slewing. The drift scan does not simulate daily calibration, the Sun, interference or Doppler correction. It is for understanding, not for planning observations.",
       credit: "All-sky map: HI4PI Collaboration (2016), A&A 594, A116.",
       units: { deg: "°", m: "m", cm: "cm", s: "s", h: "h", min: "min", dbi: "dBi" },
       loading: "Loading the map…",

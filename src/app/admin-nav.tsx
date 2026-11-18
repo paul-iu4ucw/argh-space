@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, BookOpen, MessageSquare, Users, ShieldCheck, ExternalLink, FileText } from "lucide-react";
+import { LayoutDashboard, BookOpen, MessageSquare, Users, ShieldCheck, ExternalLink, FileText, Newspaper, Radio, Activity, ListChecks } from "lucide-react";
 
 type Group = { id: number; title: string };
 
@@ -23,10 +23,15 @@ export function AdminNav({ groups, counts, extra }: { groups: Group[]; counts: {
             {groups.map((g) => <Link key={g.id} href={`/admin/wiki/${g.id}`} className={on(`/admin/wiki/${g.id}`) ? "on" : ""}><FileText size={13} /> {g.title}</Link>)}
           </div>
         )}
+        {item("/admin/novita", <Newspaper size={17} />, "Novità")}
         {item("/admin/commenti", <MessageSquare size={17} />, "Commenti", counts.comments)}
         <p className="agroup">Utenti</p>
         {item("/admin/utenti", <Users size={17} />, "Utenti", counts.users)}
         {item("/admin/sicurezza", <ShieldCheck size={17} />, "Sicurezza (2FA)")}
+        <p className="agroup">Monitoraggio RFI</p>
+        {item("/admin/rfi", <Activity size={17} />, "Panoramica", undefined, path === "/admin/rfi")}
+        {item("/admin/rfi/stazioni", <Radio size={17} />, "Stazioni")}
+        {item("/admin/rfi/rapporti", <ListChecks size={17} />, "Rapporti")}
         <p className="agroup">Sito</p>
         <a href="/wiki" target="_blank" rel="noreferrer"><ExternalLink size={17} /><span>Vedi la wiki</span></a>
         {extra && <div className="aextra">{extra}</div>}

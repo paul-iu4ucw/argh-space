@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { headers } from "next/headers";
 import { sectionsWithPages } from "@/lib/db";
+import { prisma } from "@/lib/db";
 import { siteUrl, wikiOrigin } from "@/lib/seo";
 import { tools, TOOL_LANGS } from "@/lib/tools";
 import { toolsSlug } from "@/lib/i18n/tools";
@@ -23,7 +24,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       ]),
     ];
   }
+  const posts = await prisma.post.findMany({ where: { published: true }, select: { slug: true, updatedAt: true } });
   return [
+    { url: `${siteUrl}/novita`, changeFrequency: "weekly", priority: 0.7 },
+    ...posts.map((p) => ({ url: `${siteUrl}/novita/${p.slug}`, lastModified: p.updatedAt, changeFrequency: "monthly" as const, priority: 0.6 })),
     { url: siteUrl, lastModified: new Date(), changeFrequency: "monthly", priority: 1 },
     { url: `${siteUrl}/privacy`, changeFrequency: "yearly", priority: 0.2 },
     { url: `${siteUrl}/cookie`, changeFrequency: "yearly", priority: 0.2 },

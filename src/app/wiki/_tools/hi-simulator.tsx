@@ -8,7 +8,9 @@ const getT = (l: ToolLang) => toolsText[l].sim;
 const W = 960, H = 480;
 const DEFAULTS = { beam: S.beamFromDish(S.DISH_ARGH, S.K_DEFAULT), step: 2, noise: 3, k: S.K_DEFAULT, eta: 0.55, tau: 10 };
 
-type Target = "mw" | "m31";
+type Target = "mw" | "m31" | S.CutId;
+const TARGETS: Target[] = ["mw", "m31", "mc", "gc", "cyg"];
+const isCut = (t: Target): t is S.CutId => t in S.CUTS;
 
 // Il file del cielo intero è una PNG in scala di grigi 1440 × 720 (4 px/grado, griglia l,b).
 function loadAllSky(): Promise<S.Field> {
@@ -46,8 +48,8 @@ function fieldPixels(f: S.Field) {
   return out;
 }
 
-type Kind = "gal" | "eq" | "m31";
-function axes(ctx: CanvasRenderingContext2D, kind: Kind) {
+type Kind = "gal" | "eq" | "m31" | "cut";
+function axes(ctx: CanvasRenderingContext2D, kind: Kind, cut?: { l0: number; b0: number; lon: number; lat: number }) {
   ctx.save();
   ctx.font = "600 17px system-ui, sans-serif"; ctx.fillStyle = "rgba(233,238,252,.85)"; ctx.strokeStyle = "rgba(5,8,22,.75)"; ctx.lineWidth = 4; ctx.lineJoin = "round";
   const txt = (t: string, x: number, y: number, al: CanvasTextAlign) => { ctx.textAlign = al; ctx.strokeText(t, x, y); ctx.fillText(t, x, y); };
@@ -57,10 +59,18 @@ function axes(ctx: CanvasRenderingContext2D, kind: Kind) {
   } else if (kind === "eq") {
     [[180, "24h"], [90, "18h"], [0, "12h"], [-90, "6h"]].forEach(([l, t]) => txt(t as string, W * (0.5 - (l as number) / 360), H - 8, (l as number) === 180 ? "left" : "center"));
     txt("0h", W - 4, H - 8, "right");
+  } else if (kind === "cut" && cut) {
+    // longitudine galattica (cresce verso sinistra) ogni 10°, e latitudine ogni 10°
+    for (let L = Math.ceil((cut.l0 - cut.lon / 2) / 10) * 10; L <= cut.l0 + cut.lon / 2; L += 10) {
+      const x = W * (0.5 - (L - cut.l0) / cut.lon); if (x > 26 && x < W - 26) txt(`${((L % 360) + 360) % 360}°`, x, H - 8, "center");
+    }
+    for (let B = Math.ceil((cut.b0 - cut.lat / 2) / 10) * 10; B <= cut.b0 + cut.lat / 2; B += 10) {
+      const y = H * (0.5 - (B - cut.b0) / cut.lat) + 6; if (y > 22 && y < H - 26) txt(`${B > 0 ? "+" : B < 0 ? "−" : ""}${Math.abs(B)}°`, 6, y, "left");
+    }
   } else {
     [[2, "+2°"], [0, "0°"], [-2, "−2°"]].forEach(([l, t]) => txt(t as string, W * (0.5 - (l as number) / 6), H - 8, "center"));
   }
-  const rows = kind === "m31" ? [[1, "+1°"], [0, "0°"], [-1, "−1°"]] : [[60, "+60°"], [0, "0°"], [-60, "−60°"]];
+  const rows = kind === "cut" ? [] : kind === "m31" ? [[1, "+1°"], [0, "0°"], [-1, "−1°"]] : [[60, "+60°"], [0, "0°"], [-60, "−60°"]];
   const span = kind === "m31" ? 3 : 180;
   rows.forEach(([b, t]) => txt(t as string, 6, H * (0.5 - (b as number) / span) + 6, "left"));
   ctx.restore();
@@ -136,16 +146,18 @@ export function HiSimulator({ lang }: { lang: ToolLang }) {
   const [tau, setTau] = useState(DEFAULTS.tau);
   const [mode, setMode] = useState<"linear" | "nearest">("linear");
   const [scanMode, setScanMode] = useState<"grid" | "drift">("grid");
-  const drift = scanMode === "drift";
+  const drift = scanMode === "drift" && !isCut(target); // i ritagli si osservano solo a griglia
   const [sky, setSky] = useState<S.Field | null>(null);
   const idealRef = useRef<HTMLCanvasElement>(null), obsRef = useRef<HTMLCanvasElement>(null);
 
   const m31 = useMemo(() => S.makeM31(), []);
-  useEffect(() => { if (target === "mw" && !sky) loadAllSky().then(setSky).catch(() => {}); }, [target, sky]);
+  useEffect(() => { if (target !== "m31" && !sky) loadAllSky().then(setSky).catch(() => {}); }, [target, sky]);
+  const cutF = useMemo(() => (sky && isCut(target) ? S.cutout(sky, target) : null), [sky, target]);
 
   const eqSky = useMemo(() => (sky && drift ? S.toEquatorial(sky, 1440, 720) : null), [sky, drift]);
-  const field = target === "mw" ? (drift ? eqSky : sky) : m31;
-  const kind: Kind = target === "m31" ? "m31" : drift ? "eq" : "gal";
+  const field = isCut(target) ? cutF : target === "mw" ? (drift ? eqSky : sky) : m31;
+  const kind: Kind = isCut(target) ? "cut" : target === "m31" ? "m31" : drift ? "eq" : "gal";
+  const cut = isCut(target) ? S.CUTS[target] : undefined;
   const planOpts = useMemo<S.PlanOpts>(() => (!drift ? {} : target === "mw" ? { bMin: S.DEC_MIN, bMax: S.DEC_MAX, along: beam / 2 } : { along: beam / 2 }), [drift, target, beam]);
   const dTau = useDeferredValue(tau), dBeam = useDeferredValue(beam), dStep = useDeferredValue(step), dNoise = useDeferredValue(noise), dMode = useDeferredValue(mode);
 
@@ -153,13 +165,13 @@ export function HiSimulator({ lang }: { lang: ToolLang }) {
   const base = useMemo(() => {
     if (!field) return null;
     const { lo, hi } = S.range(field);
-    return { lo, hi, gamma: target === "mw" ? 0.6 : 0.8, pixels: fieldPixels(field) };
+    return { lo, hi, gamma: target === "m31" ? 0.8 : 0.6, pixels: fieldPixels(field) };
   }, [field, target]);
 
   useEffect(() => {
     const c = idealRef.current; if (!c || !base) return;
-    const ctx = c.getContext("2d")!; paint(ctx, base.pixels, base.lo, base.hi, base.gamma); axes(ctx, kind);
-  }, [base, kind]);
+    const ctx = c.getContext("2d")!; paint(ctx, base.pixels, base.lo, base.hi, base.gamma); axes(ctx, kind, cut);
+  }, [base, kind, cut]);
 
   // risoluzione di calcolo del cielo intero: 4 px/grado solo se il fascio è stretto
   const work = useMemo(() => (field && field.allSky && dBeam >= 1.2 ? S.halve(field) : field), [field, dBeam]);
@@ -196,13 +208,13 @@ export function HiSimulator({ lang }: { lang: ToolLang }) {
     ctx.strokeStyle = "#fff"; ctx.lineWidth = 2.2; ctx.setLineDash([7, 5]);
     ctx.beginPath(); ctx.ellipse(W / 2, H / 2, Math.max(2, (dBeam / 2) * (W / work.lonSpan)), Math.max(2, (dBeam / 2) * (H / work.latSpan)), 0, 0, 6.2832); ctx.stroke();
     ctx.setLineDash([]);
-    axes(ctx, kind);
-  }, [work, base, kind, drift, target, dBeam, dStep, dNoise, dTau, dMode]);
+    axes(ctx, kind, cut);
+  }, [work, base, kind, cut, drift, target, dBeam, dStep, dNoise, dTau, dMode]);
 
   const reset = useCallback(() => { setBeam(DEFAULTS.beam); setStep(DEFAULTS.step); setNoise(DEFAULTS.noise); setK(DEFAULTS.k); setEta(DEFAULTS.eta); setTau(DEFAULTS.tau); setMode("linear"); setScanMode("grid"); }, []);
   const save = () => {
     const c = obsRef.current; if (!c) return;
-    const a = document.createElement("a"); a.download = `ARGH_${target === "mw" ? "ViaLattea" : "Andromeda"}_${drift ? "drift" : "griglia"}_beam${beam.toFixed(1)}_passo${step.toFixed(1)}.png`;
+    const a = document.createElement("a"); a.download = `ARGH_${({ mw: "ViaLattea", m31: "Andromeda", mc: "NubiMagellano", gc: "CentroGalattico", cyg: "Cigno" } as const)[target]}_${drift ? "drift" : "griglia"}_beam${beam.toFixed(1)}_passo${step.toFixed(1)}.png`;
     a.href = c.toDataURL("image/png"); a.click();
   };
 
@@ -217,19 +229,19 @@ export function HiSimulator({ lang }: { lang: ToolLang }) {
     : scanTotal * tau;
   const dur = drift && target === "mw" ? `${nf(strips, 0, loc)} ${T.rd.days}` : seconds >= 3600 ? `${nf(seconds / 3600, 1, loc)} ${T.units.h}` : seconds >= 60 ? `${nf(seconds / 60, 0, loc)} ${T.units.min}` : `${nf(seconds, 0, loc)} ${T.units.s}`;
   const dm = (v: number) => nf(v, 1, loc);
-  const facts = [...(target === "mw" ? T.factsMw : T.factsM31), ...(drift ? T.factsDrift.slice(0, target === "mw" ? 3 : 2) : [])];
+  const facts = [...(target === "m31" ? T.factsM31 : isCut(target) ? T.factsCut[target] : T.factsMw), ...(drift ? T.factsDrift.slice(0, target === "mw" ? 3 : 2) : [])];
 
   return (
     <div className="sim">
       <div className="sim-top">
         <span className="sim-chip">{T.badge}</span>
-        <div className="sim-seg" role="tablist" aria-label={T.fieldTitle}>
-          {(["mw", "m31"] as const).map((t) => (
-            <button key={t} role="tab" aria-selected={target === t} className={target === t ? "on" : ""} onClick={() => setTarget(t)}>{T.fields[t]}</button>
-          ))}
-        </div>
+        <label className="sim-target"><span>{T.fieldTitle}</span>
+          <select value={target} onChange={(e) => setTarget(e.target.value as Target)}>
+            {TARGETS.map((t) => <option key={t} value={t}>{T.fields[t]}</option>)}
+          </select>
+        </label>
       </div>
-      <p className="sim-desc">{target === "mw" ? (drift ? T.mwDescEq : T.mwDesc) : T.m31Desc}{drift && <> {T.driftDesc}</>}</p>
+      <p className="sim-desc">{isCut(target) ? T.cutDesc[target] : target === "mw" ? (drift ? T.mwDescEq : T.mwDesc) : T.m31Desc}{drift && <> {T.driftDesc}</>}</p>
 
       <div className="sim-maps">
         <figure className="sim-mapbox">
@@ -265,11 +277,11 @@ export function HiSimulator({ lang }: { lang: ToolLang }) {
 
         <section className="sim-spanel">
           <h3>{T.scan}</h3>
-          <div className="sim-sel"><span>{T.mode}</span>
+          {!isCut(target) && <div className="sim-sel"><span>{T.mode}</span>
             <div className="sim-seg small">
               {(["grid", "drift"] as const).map((m) => <button key={m} className={scanMode === m ? "on" : ""} onClick={() => setScanMode(m)}>{T.modes[m]}</button>)}
             </div>
-          </div>
+          </div>}
           <Slider id="step" label={drift ? T.stripStep : T.step} hint={drift ? T.stripHint : T.stepHint} value={step} min={0.2} max={8} stp={0.1} set={setStep} fmt={`${nf(step, 1, loc)}°`} />
           {!drift && <Slider id="tau" label={T.tau} hint={T.tauHint} value={tau} min={1} max={120} stp={1} set={setTau} fmt={`${tau} ${T.units.s}`} />}
           <Slider id="noise" label={T.noise} hint={T.noiseHint} value={noise} min={0} max={20} stp={1} set={setNoise} fmt={`${noise}%`} />

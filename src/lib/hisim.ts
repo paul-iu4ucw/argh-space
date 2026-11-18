@@ -264,6 +264,27 @@ export function makeM31(w = 384, h = 192): Field {
   return { w, h, data, lonSpan: 6, latSpan: 3, allSky: false };
 }
 
+/**
+ * Campi reali ritagliati dalla mappa HI all-sky: centro (l0, b0) e ampiezza in gradi. Tutti molto più grandi di M31.
+ * Nubi di Magellano (LMC l≈280°, SMC l≈303°) con il Ponte; centro galattico; regione del Cigno lungo il disco.
+ */
+export const CUTS = {
+  mc: { l0: 291, b0: -38, lon: 48, lat: 24 },
+  gc: { l0: 0, b0: 0, lon: 60, lat: 30 },
+  cyg: { l0: 80, b0: 0, lon: 48, lat: 24 },
+} as const;
+export type CutId = keyof typeof CUTS;
+
+/** Ritaglia dalla mappa all-sky un campo rettangolare centrato su (l0, b0) (l cresce verso sinistra, come nella mappa). */
+export function cutout(sky: Field, id: CutId, w = 384, h = 192): Field {
+  const c = CUTS[id], data = new Float32Array(w * h);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const l = c.l0 + (0.5 - (x + 0.5) / w) * c.lon, b = c.b0 + (0.5 - (y + 0.5) / h) * c.lat;
+    data[y * w + x] = at(sky, ((l + 540) % 360) - 180, Math.max(-90, Math.min(90, b)));
+  }
+  return { w, h, data, lonSpan: c.lon, latSpan: c.lat, allSky: false };
+}
+
 /** Intervallo [min, max] del campo, per usare la stessa scala colori prima e dopo il fascio. */
 export function range(f: Field) {
   let lo = Infinity, hi = -Infinity;

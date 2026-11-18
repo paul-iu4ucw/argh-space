@@ -39,23 +39,23 @@ model Page {
 }
 
 model User {
-  id              Int       @id @default(autoincrement())
-  name            String
-  email           String    @unique
-  passwordHash    String    @map("password_hash")
-  createdAt       DateTime  @default(now()) @map("created_at")
-  emailVerifiedAt DateTime? @map("email_verified_at")
-  verifyHash      String?   @unique @map("verify_hash") // sha256 del token inviato per email
-  verifyExpires   DateTime? @map("verify_expires")
-  verifySentAt    DateTime? @map("verify_sent_at")
+  id                Int       @id @default(autoincrement())
+  name              String
+  email             String    @unique
+  passwordHash      String    @map("password_hash")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  emailVerifiedAt   DateTime? @map("email_verified_at")
+  verifyHash        String?   @unique @map("verify_hash") // sha256 del token inviato per email
+  verifyExpires     DateTime? @map("verify_expires")
+  verifySentAt      DateTime? @map("verify_sent_at")
   privacyAcceptedAt DateTime? @map("privacy_accepted_at") // accettazione dell'informativa
-  role              String?   // chi sei: student, teacher, ham, enthusiast, researcher, other
-  institute         String?   // solo per gli studenti: scuola o università (testo libero)
-  callsign          String?   // solo radioamatori: nominativo (es. IU4UCW)
-  club              String?   // solo radioamatori: sede/sezione di appartenenza (es. IQ4RE), facoltativa
-  country           String?   // codice ISO 3166-1 alpha-2 (facoltativo)
+  role              String? // chi sei: student, teacher, ham, enthusiast, researcher, other
+  institute         String? // solo per gli studenti: scuola o università (testo libero)
+  callsign          String? // solo radioamatori: nominativo (es. IU4UCW)
+  club              String? // solo radioamatori: sede/sezione di appartenenza (es. IQ4RE), facoltativa
+  country           String? // codice ISO 3166-1 alpha-2 (facoltativo)
   locale            String    @default("it") // lingua preferita: it | en (email e interfaccia)
-  sessionVersion    Int      @default(0) @map("session_version") // si incrementa a ogni cambio/reset password: chiude le altre sessioni
+  sessionVersion    Int       @default(0) @map("session_version") // si incrementa a ogni cambio/reset password: chiude le altre sessioni
   resetHash         String?   @unique @map("reset_hash") // recupero password: sha256 del token inviato per email
   resetExpires      DateTime? @map("reset_expires")
   resetSentAt       DateTime? @map("reset_sent_at")
@@ -63,15 +63,15 @@ model User {
   newEmailHash      String?   @unique @map("new_email_hash")
   newEmailExpires   DateTime? @map("new_email_expires")
   deleteAt          DateTime? @map("delete_at") // eliminazione richiesta: l'account sparisce a questa data, se non rientra prima
-  mailConsent    Boolean   @default(false) @map("mail_consent") // consenso a email su eventi e pubblicazioni
-  mailConsentAt   DateTime? @map("mail_consent_at")
-  totpSecret      String?   @map("totp_secret") // cifrato
-  totpEnabled     Boolean   @default(false) @map("totp_enabled")
-  totpRecovery    String[]  @default([]) @map("totp_recovery") // hash dei codici di recupero
-  totpLastStep    Int       @default(0) @map("totp_last_step")
-  totpFails       Int       @default(0) @map("totp_fails")
-  totpLockUntil   DateTime? @map("totp_lock_until")
-  comments        Comment[]
+  mailConsent       Boolean   @default(false) @map("mail_consent") // consenso a email su eventi e pubblicazioni
+  mailConsentAt     DateTime? @map("mail_consent_at")
+  totpSecret        String?   @map("totp_secret") // cifrato
+  totpEnabled       Boolean   @default(false) @map("totp_enabled")
+  totpRecovery      String[]  @default([]) @map("totp_recovery") // hash dei codici di recupero
+  totpLastStep      Int       @default(0) @map("totp_last_step")
+  totpFails         Int       @default(0) @map("totp_fails")
+  totpLockUntil     DateTime? @map("totp_lock_until")
+  comments          Comment[]
 
   @@map("users")
 }
@@ -99,4 +99,138 @@ model Setting {
   value String
 
   @@map("settings")
+}
+
+// Amministratori del sito. Il primo si crea da /admin/setup (solo con l'email indicata in ADMIN_EMAIL, confermata con un link).
+model Admin {
+  id              Int       @id @default(autoincrement())
+  name            String
+  email           String    @unique
+  passwordHash    String    @map("password_hash")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  lastLoginAt     DateTime? @map("last_login_at")
+  emailVerifiedAt DateTime? @map("email_verified_at")
+  verifyHash      String?   @unique @map("verify_hash")
+  verifyExpires   DateTime? @map("verify_expires")
+  verifySentAt    DateTime? @map("verify_sent_at")
+  resetHash       String?   @unique @map("reset_hash")
+  resetExpires    DateTime? @map("reset_expires")
+  resetSentAt     DateTime? @map("reset_sent_at")
+  sessionVersion  Int       @default(0) @map("session_version")
+  totpSecret      String?   @map("totp_secret")
+  totpEnabled     Boolean   @default(false) @map("totp_enabled")
+  totpRecovery    String[]  @default([]) @map("totp_recovery")
+  totpLastStep    Int       @default(0) @map("totp_last_step")
+  totpFails       Int       @default(0) @map("totp_fails")
+  totpLockUntil   DateTime? @map("totp_lock_until")
+
+  @@map("admins")
+}
+
+// Novità del sito: news ed eventi. Se richiesto, vengono inviate per email a chi ha dato il consenso (coda in PostMail).
+model Post {
+  id          Int        @id @default(autoincrement())
+  kind        String     @default("news") // news | event
+  title       String
+  slug        String     @unique
+  content     String     @default("")
+  lang        String     @default("it") // it | en
+  published   Boolean    @default(false)
+  publishedAt DateTime?  @map("published_at")
+  eventStart  DateTime?  @map("event_start")
+  eventEnd    DateTime?  @map("event_end")
+  location    String?
+  link        String? // iscrizione o diretta
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @default(now()) @updatedAt @map("updated_at")
+  mails       PostMail[]
+
+  @@index([published, publishedAt])
+  @@map("posts")
+}
+
+// Una riga per destinatario: il cron la prende in carico a piccoli gruppi.
+model PostMail {
+  id        Int       @id @default(autoincrement())
+  postId    Int       @map("post_id")
+  post      Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    Int       @map("user_id")
+  status    String    @default("pending") // pending | sending | sent | failed | skipped
+  attempts  Int       @default(0)
+  claimedAt DateTime? @map("claimed_at")
+  sentAt    DateTime? @map("sent_at")
+  error     String?
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  @@unique([postId, userId])
+  @@index([status, id])
+  @@map("post_mails")
+}
+
+// Stazioni di monitoraggio RFI a 1420 MHz (Raspberry Pi + RTL-SDR). Ogni stazione ha una chiave API, conservata solo come hash.
+model RfiStation {
+  id         Int         @id @default(autoincrement())
+  stationId  String      @unique @map("station_id") // es. argh-rfi-01
+  name       String
+  lat        Float?
+  lon        Float?
+  altM       Float?      @map("alt_m")
+  apiKeyHash String      @unique @map("api_key_hash")
+  active     Boolean     @default(true)
+  createdAt  DateTime    @default(now()) @map("created_at")
+  lastSeenAt DateTime?   @map("last_seen_at") // ultimo rapporto ricevuto
+  reports    RfiReport[]
+
+  @@map("rfi_stations")
+}
+
+// Un rapporto ogni 30 minuti per stazione (schema argh.rfi.report/1). Si conserva anche il JSON grezzo per poter ricalcolare l'indice.
+model RfiReport {
+  id          Int          @id @default(autoincrement())
+  stationId   Int          @map("station_id")
+  station     RfiStation   @relation(fields: [stationId], references: [id], onDelete: Cascade)
+  periodStart DateTime     @map("period_start")
+  periodEnd   DateTime?    @map("period_end")
+  receivedAt  DateTime     @default(now()) @map("received_at")
+  valid       Boolean      @default(true)
+  error       String? // perché il rapporto è stato marcato non valido
+  schema      String?
+  sweeps      Int?
+
+  qualityIndex         Float? @map("quality_index")
+  qualityClass         String? @map("quality_class")
+  occProtectedPct      Float? @map("occupancy_protected_pct")
+  occHiWindowPct       Float? @map("occupancy_hi_window_pct")
+  occAdjacentPct       Float? @map("occupancy_adjacent_pct")
+  noiseFloorDbfs       Float? @map("noise_floor_dbfs")
+  noiseRiseDb          Float? @map("noise_rise_db")
+  rfiEventsProtected   Int?   @map("rfi_events_protected")
+  impulsivePct         Float? @map("impulsive_pct")
+  maxExcessProtectedDb Float? @map("max_excess_protected_db")
+  maxExcessAdjacentDb  Float? @map("max_excess_adjacent_db")
+  cpuTempC             Float? @map("cpu_temp_c")
+  uptimeH              Float? @map("uptime_h")
+
+  rawJson Json         @map("raw_json")
+  signals RfiSignal[]
+
+  @@unique([stationId, periodStart])
+  @@index([periodStart])
+  @@index([valid, periodStart])
+  @@map("rfi_reports")
+}
+
+// Una riga per ogni elemento di top_signals.
+model RfiSignal {
+  id              Int       @id @default(autoincrement())
+  reportId        Int       @map("report_id")
+  report          RfiReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  freqMhz         Float     @map("freq_mhz")
+  occupancyPct    Float     @map("occupancy_pct")
+  maxExcessDb     Float     @map("max_excess_db")
+  inProtectedBand Boolean   @map("in_protected_band")
+
+  @@index([reportId])
+  @@index([freqMhz])
+  @@map("rfi_signals")
 }

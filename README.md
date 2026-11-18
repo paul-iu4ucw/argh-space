@@ -40,16 +40,17 @@ Il sito è su <http://localhost:3000>, l'admin su <http://localhost:3000/admin>.
 
 | Variabile | Descrizione |
 | --- | --- |
-| `ADMIN_USER` / `ADMIN_PASSWORD` | Credenziali del login `/admin` |
+| `ADMIN_EMAIL` | Email del proprietario: è l'unica che può creare il primo amministratore da `/admin/setup` |
 | `AUTH_SECRET` | Stringa casuale (almeno 32 caratteri) per firmare la sessione |
 | `DATABASE_URL` | Connessione diretta, usata da migrazioni e seed |
 | `DATABASE_URL_POOLED` | Connessione pooled, usata dall'app se presente (consigliata su Vercel) |
 | `NEXT_PUBLIC_SITE_URL` | URL pubblico del sito (canonical, sitemap) |
 | `NEXT_PUBLIC_WIKI_URL` | URL pubblico della wiki |
+| `NEXT_PUBLIC_GTM_ID` | ID del contenitore Google Tag Manager (facoltativa; in produzione il valore predefinito è `GTM-NFZ4HSFL`). Il tag si carica solo dopo il consenso ai cookie |
 | `SMTP_HOST` / `SMTP_PORT` | Server SMTP per le email di conferma (OVH: `ssl0.ovh.net`, porta 465) |
 | `SMTP_USER` / `SMTP_PASSWORD` | Casella da cui partono le email; `SMTP_FROM` (opzionale) cambia il mittente |
 
-Non committare `.env.local`. Cambia `ADMIN_PASSWORD` e `AUTH_SECRET` prima di andare online.
+Non committare `.env.local`. Imposta `AUTH_SECRET` (almeno 32 caratteri, e non cambiarlo più dopo aver attivato il 2FA) prima di andare online.
 
 ## Script
 
@@ -100,9 +101,9 @@ Sitemap, robots e canonical tengono conto dell'host.
 
 ### Admin
 
-Su `/admin`, dopo il login, si possono creare, rinominare, riordinare ed eliminare gruppi e pagine,
-scegliere l'icona del gruppo, pubblicare o nascondere una pagina. Per collegare una pagina alla sua
-traduzione usa lo stesso valore nel campo "Collegamento traduzione", sia sul gruppo sia sulla pagina.
+Gli amministratori sono nel database (tabella `admins`). Il primo si crea da `/admin/setup`: la pagina è aperta solo finché non esiste un amministratore con l'email confermata e accetta soltanto l'indirizzo in `ADMIN_EMAIL`, che va confermato con il link ricevuto per email (serve l'SMTP configurato). Poi si accede da `/admin/login` con email e password (e codice 2FA, se attivo). «Password dimenticata?» invia un link per sceglierne una nuova; da *Sicurezza* si cambia la password e si attiva il 2FA.
+
+Su `/admin`, dopo il login, si possono creare, rinominare, riordinare ed eliminare sezioni e pagine, pubblicare o nascondere una pagina, moderare commenti e utenti. Per collegare una pagina alla sua traduzione usa lo stesso valore nel campo "Collegamento traduzione", sia sulla sezione sia sulla pagina.
 L'area admin è marcata `noindex`.
 
 ### Strumenti (simulatore)
@@ -122,6 +123,27 @@ e la pagina mostra un indice laterale. Il vecchio Markdown viene convertito al v
 
 Metadata per pagina, `sitemap.xml`, `robots.txt`, Open Graph e Twitter card, manifest,
 JSON-LD (Organization, WebSite, TechArticle, BreadcrumbList).
+
+## Stazioni RFI (backend)
+
+Le stazioni di monitoraggio a 1420 MHz (Raspberry Pi + RTL-SDR, script `argh_rfi_monitor.py`) inviano un rapporto JSON ogni 30 minuti.
+
+1. Nel menu admin «Monitoraggio RFI» (Panoramica, Stazioni, Rapporti) premi «Nuova stazione»: un popup mostra **URL e chiave API** con i pulsanti di copia, una sola volta; nel database resta solo l'hash. Si può rigenerare (quella vecchia smette subito di funzionare), disattivare o eliminare.
+2. Sul Raspberry imposta `ARGH_API_KEY` (e `ARGH_API_URL=https://argh.space/api/v1/rfi/reports`).
+3. Prova a mano: `curl -X POST https://argh.space/api/v1/rfi/reports -H "Authorization: Bearer <chiave>" -H "Content-Type: application/json" -d @rapporto.json`
+
+**`POST /api/v1/rfi/reports`** (schema `argh.rfi.report/1`, chiave univoca stazione + `period_start`)
+
+| Risposta | Quando |
+|---|---|
+| `201` | rapporto nuovo salvato |
+| `200` | già ricevuto (duplicato) **oppure non valido**: viene salvato grezzo con `valid=false` e l'errore, così la coda dello script non si blocca |
+| `401` | chiave mancante, errata o stazione disattivata |
+| `5xx` | errore del server: lo script ritenta |
+
+**`GET /api/v1/rfi/summary`** (riservato a utenti registrati e admin, come la pagina `/dashboard`: gli altri visitatori vedono «Dashboard in costruzione»): senza parametri l'elenco delle stazioni attive con ultimo stato; con `?station=argh-rfi-01&days=7|30` stato, andamento (orario a 7 giorni, giornaliero a 30), mappa oraria (ora italiana), segnali ricorrenti, finestre pulite (classe A, 24 h) e salute del Raspberry. Una stazione è «non raggiungibile» se non arrivano rapporti da più di 90 minuti. La posizione pubblica è arrotondata a 2 decimali (≈ 1 km).
+
+Tabelle: `rfi_stations`, `rfi_reports` (una colonna per metrica + `raw_json`), `rfi_signals`. La logica sta in `src/lib/rfi*.ts`; `npx tsx scripts/check-rfi.ts` verifica il validatore.
 
 ## Deploy su Vercel
 
