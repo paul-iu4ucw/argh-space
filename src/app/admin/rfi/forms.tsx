@@ -9,7 +9,7 @@ const ERR = {
 } as const;
 
 /** Finestra di dialogo (popup) nativa: Esc o clic fuori per chiudere. */
-function Modal({ open, onClose, title, children }: { open: boolean; onClose: () => void; title: string; children: React.ReactNode }) {
+export function Modal({ open, onClose, title, children }: { open: boolean; onClose: () => void; title: string; children: React.ReactNode }) {
   const ref = useRef<HTMLDialogElement>(null);
   useEffect(() => {
     const d = ref.current; if (!d) return;

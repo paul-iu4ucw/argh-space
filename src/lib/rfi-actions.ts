@@ -48,6 +48,13 @@ export async function toggleStation(f: FormData) {
   if (st) await prisma.rfiStation.update({ where: { id: st.id }, data: { active: !st.active } });
   refresh();
 }
+/** Approva (o ritira) una stazione degli utenti: solo quelle approvate compaiono nella dashboard. */
+export async function toggleApproval(f: FormData) {
+  await guard();
+  const st = await prisma.rfiStation.findUnique({ where: { id: num(f, "id") } });
+  if (st) await prisma.rfiStation.update({ where: { id: st.id }, data: { approved: !st.approved } });
+  refresh(); revalidatePath("/dashboard");
+}
 export async function deleteStation(f: FormData) {
   await guard();
   await prisma.rfiStation.delete({ where: { id: num(f, "id") } }).catch(() => {});

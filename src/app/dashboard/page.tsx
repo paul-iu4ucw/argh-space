@@ -114,7 +114,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
       </DashShell>
     );
   }
-  const stations = await prisma.rfiStation.findMany({ where: { active: true }, orderBy: { stationId: "asc" } }).catch(() => []);
+  const stations = await prisma.rfiStation.findMany({ where: { active: true, approved: true }, orderBy: { stationId: "asc" } }).catch(() => []);
   const st = stations.find((s) => s.stationId === q.station) ?? stations[0];
   const sum = st ? await stationSummary(st, days, tzName(prefs)).catch(() => null) : null;
   // andamento di tutte le stazioni attive (la selezionata per prima): il grafico le confronta

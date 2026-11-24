@@ -1,6 +1,8 @@
 // Validazione del rapporto "argh.rfi.report/1" (vedi la specifica dati e API della stazione RFI). Funzione pura, senza database.
 export const RFI_SCHEMA = "argh.rfi.report/1";
 
+/** Segnali principali accettati per rapporto. */
+export const MAX_SIGNALS = 10;
 export type RfiSignalIn = { freqMhz: number; occupancyPct: number; maxExcessDb: number; inProtectedBand: boolean };
 export type RfiReportIn = {
   periodStart: Date; periodEnd: Date; sweeps: number;
@@ -57,7 +59,7 @@ export function parseReport(raw: unknown, now = new Date()): Parsed {
 
   const signals: RfiSignalIn[] = [];
   if (raw.top_signals !== undefined) {
-    if (!Array.isArray(raw.top_signals) || raw.top_signals.length > 5) return bad("top_signals deve essere una lista di al massimo 5 elementi");
+    if (!Array.isArray(raw.top_signals) || raw.top_signals.length > MAX_SIGNALS) return bad(`top_signals deve essere una lista di al massimo ${MAX_SIGNALS} elementi`);
     for (const s of raw.top_signals) {
       if (!isObj(s)) return bad("elemento di top_signals non valido");
       const f = num(s.freq_mhz), o = num(s.occupancy_pct), x = num(s.max_excess_db);

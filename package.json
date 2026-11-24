@@ -11,6 +11,7 @@
     "db:migrate": "prisma migrate deploy",
     "db:studio": "prisma studio",
     "seed:hardware": "tsx scripts/seed-hardware.ts",
+    "seed:sentinel": "tsx scripts/seed-sentinel.ts",
     "seed:translations": "tsx scripts/seed-translations.ts"
   },
   "dependencies": {

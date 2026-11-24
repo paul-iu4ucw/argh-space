@@ -984,3 +984,11 @@ h1,h2,h3,h4,h5,.brand,.eyebrow,.menu,.anav,.side,.aside,.au-tabs,.dsh-tabs,.badg
 .hubtag{display:block;color:var(--acc);font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;margin-top:2px}
 .hubtag.big{font-size:.9rem;margin:-2px 0 10px}
 .grp-proj{margin:18px 10px 4px;font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);font-weight:700}
+
+/* account: le mie stazioni */
+.acct-st h2{display:flex;align-items:center;gap:8px;font-size:1.15rem;margin:0 0 6px}
+.mst{padding:14px;margin:12px 0;border:1px solid var(--line);border-radius:12px;background:var(--bg)}
+.mst-top{display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+.mst-data{display:flex;align-items:center;flex-wrap:wrap;gap:6px 16px;margin:10px 0 0}
+.mst-data small{color:var(--mute);flex-basis:100%}
+.mst-acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}

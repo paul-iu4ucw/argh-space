@@ -73,6 +73,7 @@ model User {
   totpFails         Int       @default(0) @map("totp_fails")
   totpLockUntil     DateTime? @map("totp_lock_until")
   comments          Comment[]
+  stations          RfiStation[]
 
   @@map("users")
 }
@@ -180,8 +181,12 @@ model RfiStation {
   active     Boolean     @default(true)
   createdAt  DateTime    @default(now()) @map("created_at")
   lastSeenAt DateTime?   @map("last_seen_at") // ultimo rapporto ricevuto
+  ownerId    Int?        @map("owner_id") // utente che l'ha aggiunta (null = creata dall'admin)
+  owner      User?       @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  approved   Boolean     @default(true) // false: i dati arrivano ma compaiono solo nel profilo del proprietario, non nella dashboard
   reports    RfiReport[]
 
+  @@index([ownerId])
   @@map("rfi_stations")
 }
 

@@ -1,9 +1,9 @@
 import { redirect } from "next/navigation";
-import { Power, Trash2, Radio } from "lucide-react";
+import { Power, Trash2, Radio, BadgeCheck, EyeOff } from "lucide-react";
 import { isAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { stationStatus } from "@/lib/rfi";
-import { deleteStation, toggleStation } from "@/lib/rfi-actions";
+import { deleteStation, toggleApproval, toggleStation } from "@/lib/rfi-actions";
 import { ConfirmButton } from "../../../confirm-button";
 import { NewStationButton, RotateKeyButton } from "../forms";
 
@@ -14,7 +14,7 @@ export default async function Stazioni() {
   if (!(await isAdmin())) redirect("/admin/login");
   const since = new Date(Date.now() - 7 * 86400_000);
   const [stations, counts] = await Promise.all([
-    prisma.rfiStation.findMany({ orderBy: { stationId: "asc" } }),
+    prisma.rfiStation.findMany({ orderBy: [{ approved: "asc" }, { stationId: "asc" }], include: { owner: { select: { name: true, email: true } } } }),
     prisma.rfiReport.groupBy({ by: ["stationId", "valid"], where: { receivedAt: { gte: since } }, _count: true }),
   ]);
   const st = await Promise.all(stations.map(async (s) => ({ s, status: await stationStatus(s) })));
@@ -29,10 +29,14 @@ export default async function Stazioni() {
             <div className="rfi-info">
               <Radio size={15} /> <b>{s.name}</b> <code>{s.stationId}</code>{" "}
               <span className={`badge ${!s.active ? "draft" : status.reachable ? "ok" : "draft"}`}>{!s.active ? "Disattivata" : status.reachable ? "Online" : "Non raggiungibile"}</span>
+              {!s.approved && <span className="badge draft">Da approvare</span>}
+              {s.approved && s.owner && <span className="badge ok">Pubblica</span>}
               {status.latest?.qualityClass && <span className="badge">Classe {status.latest.qualityClass}</span>}
-              <p>{s.lat !== null && s.lon !== null ? `${s.lat.toFixed(4)}, ${s.lon.toFixed(4)}${s.altM !== null ? ` · ${s.altM} m` : ""} · ` : ""}creata il {fmt(s.createdAt)} · ultimo rapporto: {fmt(s.lastSeenAt)} · 7 giorni: {cnt(s.id, true)} validi, {cnt(s.id, false)} non validi</p>
+              <p>{s.lat !== null && s.lon !== null ? `${s.lat.toFixed(4)}, ${s.lon.toFixed(4)}${s.altM !== null ? ` · ${s.altM} m` : ""} · ` : ""}{s.owner ? `di ${s.owner.name} (${s.owner.email}) · ` : ""}creata il {fmt(s.createdAt)} · ultimo rapporto: {fmt(s.lastSeenAt)} · 7 giorni: {cnt(s.id, true)} validi, {cnt(s.id, false)} non validi</p>
             </div>
             <div className="rfi-acts">
+              {s.owner && <form action={toggleApproval}><input type="hidden" name="id" value={s.id} />
+                <button className={`ibtn ${s.approved ? "" : "pri"}`} title={s.approved ? "Togli dalla dashboard" : "Approva e mostra nella dashboard"} aria-label={s.approved ? "Togli dalla dashboard" : "Approva la stazione"}>{s.approved ? <EyeOff size={17} /> : <BadgeCheck size={17} />}</button></form>}
               <RotateKeyButton id={s.id} name={s.name} iconOnly />
               <form action={toggleStation}><input type="hidden" name="id" value={s.id} />
                 <button className="ibtn" title={s.active ? "Disattiva" : "Riattiva"} aria-label={s.active ? "Disattiva la stazione" : "Riattiva la stazione"}><Power size={17} /></button></form>
