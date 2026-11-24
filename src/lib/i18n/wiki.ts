@@ -4,6 +4,11 @@ export type WLang = "it" | "en";
 export const wikiText = {
   it: {
     name: "Wiki A.R.G.H.",
+    hub: {
+      scope: "Scegli la guida",
+      tele: { title: "Radiotelescopio", tag: "Il radiotelescopio A.R.G.H.", text: "Costruzione e uso del radiotelescopio: parabola da 2,4 m, SDR, riga dell'idrogeno a 21 cm, software e didattica.", cta: "Apri la guida" },
+      rfi: { title: "Sentinel 1420", tag: "Stazione di interferenze RFI", text: "La sentinella della riga a 21 cm: una stazione che misura di continuo la qualità della banda dell'idrogeno (1400–1427 MHz). Hardware, installazione, indice di qualità e dati.", cta: "Apri la guida" },
+    },
     heroEyebrow: "Documentazione",
     heroTitle: "Wiki A.R.G.H.",
     heroText: "Guide tecniche, materiale didattico e informazioni sul progetto: tutto quello che serve per capire, costruire e usare il radiotelescopio.",
@@ -25,6 +30,11 @@ export const wikiText = {
   },
   en: {
     name: "A.R.G.H. Wiki",
+    hub: {
+      scope: "Choose a guide",
+      tele: { title: "Radio telescope", tag: "The A.R.G.H. radio telescope", text: "Building and using the radio telescope: 2.4 m dish, SDR, the 21 cm hydrogen line, software and teaching.", cta: "Open the guide" },
+      rfi: { title: "Sentinel 1420", tag: "RFI interference station", text: "The sentinel of the 21 cm line: a station that continuously measures the quality of the hydrogen band (1400–1427 MHz). Hardware, installation, quality index and data.", cta: "Open the guide" },
+    },
     heroEyebrow: "Documentation",
     heroTitle: "A.R.G.H. Wiki",
     heroText: "Technical guides, teaching material and project information: everything you need to understand, build and use the radio telescope.",

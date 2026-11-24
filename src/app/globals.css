@@ -972,3 +972,15 @@ h1,h2,h3,h4,h5,.brand,.eyebrow,.menu,.anav,.side,.aside,.au-tabs,.dsh-tabs,.badg
 .qi-rows em{font-style:normal;font-weight:700;color:var(--acc);text-align:right;font-size:.9rem;max-width:130px}
 .qi-ex{padding:10px 12px;border-left:3px solid var(--acc);background:var(--bg);border-radius:0 8px 8px 0}
 @media(max-width:560px){.qi-rows li{grid-template-columns:26px 1fr}.qi-rows em{grid-column:2;text-align:left;max-width:none}}
+
+/* home della wiki: due guide (radiotelescopio e lettore RFI) */
+.sgrid.hub{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.hubcard{padding:24px}.hubcard p{color:var(--mute);margin:0 0 14px;font-size:.98rem;flex:1}
+.hubcard .count{margin-top:auto}
+.scard ul.chips,.chips{list-style:none;flex:none;display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px;padding:0}
+.chips li{padding:3px 10px;border:1px solid var(--line);border-radius:999px;font-size:.8rem;color:var(--mute)}
+.hubh{margin-bottom:24px}.hubh h1{margin:4px 0 8px}.hubh .meta{max-width:680px}
+.sgrid.four{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.hubtag{display:block;color:var(--acc);font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;margin-top:2px}
+.hubtag.big{font-size:.9rem;margin:-2px 0 10px}
+.grp-proj{margin:18px 10px 4px;font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);font-weight:700}

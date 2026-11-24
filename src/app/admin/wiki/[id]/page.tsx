@@ -58,6 +58,7 @@ export default async function SectionPage({ params, searchParams }: { params: Pr
                 <form action={renameSection} className="spanel">
                   <input type="hidden" name="id" value={s.id} /><input type="hidden" name="lang" value={s.lang} />
                   <label>Nome<input name="title" defaultValue={s.title} required /></label>
+                  <label>Progetto<select name="project" defaultValue={s.project}><option value="radio">Radiotelescopio</option><option value="sentinel">Sentinel 1420 (stazione di interferenze)</option></select></label>
                   <div className="irow"><span>Icona</span><IconPicker value={s.icon} /></div>
                   <label>Collegamento traduzione<input name="key" defaultValue={s.key ?? ""} placeholder="es. srt-hardware" /></label>
                   <div className="row">

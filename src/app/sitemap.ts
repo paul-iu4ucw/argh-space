@@ -14,6 +14,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const last = (d: Date) => d;
     return [
       { url: wikiOrigin, changeFrequency: "weekly", priority: 1 },
+      { url: `${wikiOrigin}/radiotelescopio`, changeFrequency: "weekly", priority: 0.8 },
+      { url: `${wikiOrigin}/sentinel`, changeFrequency: "weekly", priority: 0.8 },
       ...TOOL_LANGS.flatMap((l) => [
         { url: `${wikiOrigin}/${toolsSlug[l]}`, changeFrequency: "monthly" as const, priority: 0.6 },
         ...tools.map((t) => ({ url: `${wikiOrigin}/${toolsSlug[l]}/${t.slug[l]}`, changeFrequency: "monthly" as const, priority: 0.7 })),

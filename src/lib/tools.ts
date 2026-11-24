@@ -12,7 +12,7 @@ export const toolDesc = (t: ToolDef, l: ToolLang) => toolsText[l].sim.desc;
 /** Voci di indice (stessa forma delle sezioni del database) per il menu della wiki. */
 export function toolsNav() {
   return TOOL_LANGS.map((l) => ({
-    title: toolsText[l].section, slug: toolsSlug[l], icon: "wrench", lang: l as string,
+    title: toolsText[l].section, slug: toolsSlug[l], icon: "wrench", lang: l as string, project: "radio",
     pages: tools.map((t) => ({ title: toolTitle(t, l), slug: t.slug[l] })),
   }));
 }

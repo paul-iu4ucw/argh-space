@@ -8,7 +8,7 @@ import { clean, toHtml } from "./content";
 import { dropUserPrefs } from "./dash-store";
 import { adminStore, checkCode, clearPending, readPending, setPending } from "./twofa";
 
-const RESERVED = ["admin", "wiki", "api", "privacy", "cookie", "login", "strumenti", "tools", "account"];
+const RESERVED = ["admin", "wiki", "api", "privacy", "cookie", "login", "strumenti", "tools", "account", "radiotelescopio", "sentinel"];
 
 async function guard() { if (!(await isAdmin())) redirect("/admin/login"); }
 const str = (f: FormData, k: string) => String(f.get(k) ?? "").trim();
@@ -41,6 +41,7 @@ export async function loginCode(_: LoginState, f: FormData): Promise<LoginState>
 }
 export async function logout() { await destroySession(); redirect("/admin/login"); }
 
+const proj = (f: FormData) => (str(f, "project") === "sentinel" ? "sentinel" : "radio");
 export async function createSection(f: FormData) {
   await guard();
   const title = str(f, "title"); if (!title) return;
@@ -49,7 +50,7 @@ export async function createSection(f: FormData) {
   let id: number;
   try {
     // nasce in italiano; la key collega la futura versione inglese
-    id = (await prisma.section.create({ data: { title, slug, position: (max._max.position ?? 0) + 1, icon: str(f, "icon") || "book", lang: "it", key: str(f, "key") || slug } })).id;
+    id = (await prisma.section.create({ data: { title, slug, position: (max._max.position ?? 0) + 1, icon: str(f, "icon") || "book", lang: "it", key: str(f, "key") || slug, project: proj(f) } })).id;
   } catch { return; /* slug già esistente */ }
   refresh();
   redirect(`/admin/wiki/${id}`);
@@ -67,7 +68,7 @@ export async function createTranslation(f: FormData) {
   let id: number;
   try {
     if (!src.key) await prisma.section.update({ where: { id: src.id }, data: { key } });
-    id = (await prisma.section.create({ data: { title, slug, icon: src.icon, lang, key, position: src.position } })).id;
+    id = (await prisma.section.create({ data: { title, slug, icon: src.icon, lang, key, position: src.position, project: src.project } })).id;
   } catch { return; }
   refresh();
   redirect(`/admin/wiki/${id}`);
@@ -75,7 +76,7 @@ export async function createTranslation(f: FormData) {
 export async function renameSection(f: FormData) {
   await guard();
   const title = str(f, "title"); if (!title) return;
-  await prisma.section.update({ where: { id: num(f, "id") }, data: { title, icon: str(f, "icon") || "book", lang: lang(f), key: str(f, "key") || null } });
+  await prisma.section.update({ where: { id: num(f, "id") }, data: { title, icon: str(f, "icon") || "book", lang: lang(f), key: str(f, "key") || null, project: proj(f) } });
   refresh();
 }
 export async function deleteSection(f: FormData) {

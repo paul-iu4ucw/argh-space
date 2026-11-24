@@ -2,11 +2,11 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Search, ChevronDown } from "lucide-react";
+import { Search, ChevronDown, House } from "lucide-react";
 import { Icon } from "./icons";
 
-type Sec = { title: string; slug: string; icon: string; lang: string; pages: { title: string; slug: string }[] };
-type Labels = { search: string; noResults: string; menu: string };
+type Sec = { project: string; title: string; slug: string; icon: string; lang: string; pages: { title: string; slug: string }[] };
+type Labels = { search: string; noResults: string; menu: string; home: string; projects: Record<string, string> };
 
 export function WikiNav({ base, sections, defaultLang, labels, extra }: { extra?: React.ReactNode; base: string; sections: Sec[]; defaultLang: string; labels: Record<string, Labels> }) {
   const path = usePathname();
@@ -26,7 +26,7 @@ export function WikiNav({ base, sections, defaultLang, labels, extra }: { extra?
 
   const filtered = useMemo(() => {
     const t = q.trim().toLowerCase();
-    const list = sections.filter((s) => s.lang === lang);
+    const list = sections.filter((s) => s.lang === lang).sort((a, b) => Number(a.project === "sentinel") - Number(b.project === "sentinel"));
     if (!t) return list;
     return list
       .map((s) => ({ ...s, pages: s.title.toLowerCase().includes(t) ? s.pages : s.pages.filter((p) => p.title.toLowerCase().includes(t)) }))
@@ -40,11 +40,13 @@ export function WikiNav({ base, sections, defaultLang, labels, extra }: { extra?
         <label className="search"><Search size={16} />
           <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={L.search} aria-label={L.search} />
         </label>
+        <Link href={base || "/"} className={`grp-h${path === (base || "/") ? " cur" : ""}`} aria-current={path === (base || "/") ? "page" : undefined}><House size={16} /><span>{L.home}</span></Link>
         {filtered.length === 0 && <p className="meta">{L.noResults}</p>}
-        {filtered.map((s) => {
+        {filtered.map((s, i) => {
           const expanded = !!q.trim() || open[s.slug];
           return (
             <div key={s.slug} className="grp">
+              {s.project !== filtered[i - 1]?.project && <p className="grp-proj">{L.projects[s.project] ?? s.project}</p>}
               <button className="grp-h" onClick={() => setOpen({ ...open, [s.slug]: !open[s.slug] })} aria-expanded={expanded}>
                 <Icon name={s.icon} size={16} /><span>{s.title}</span>
                 <ChevronDown size={15} className={expanded ? "rot" : ""} />

@@ -15,6 +15,7 @@ model Section {
   icon     String  @default("book")
   lang     String  @default("it") // "it" | "en"
   key      String? // stesso valore nelle traduzioni dello stesso gruppo
+  project  String  @default("radio") // "radio" (radiotelescopio) | "sentinel" (stazione di interferenze)
   pages    Page[]
 
   @@map("sections")

@@ -25,6 +25,7 @@ export default async function Admin() {
           <summary className="btn small plus" title="Aggiungi una sezione" aria-label="Aggiungi una sezione"><Plus size={17} /> Nuova sezione</summary>
           <form action={createSection} className="spanel">
             <label>Nome della sezione<input name="title" placeholder="es. Hardware" required /></label>
+            <label>Progetto<select name="project" defaultValue="radio"><option value="radio">Radiotelescopio</option><option value="sentinel">Sentinel 1420 (stazione di interferenze)</option></select></label>
             <div className="irow"><span>Icona</span><IconPicker value="book" /></div>
             <p className="meta" style={{ margin: 0 }}>Nasce in italiano: la versione inglese si aggiunge dentro la sezione.</p>
             <div className="row"><button className="btn small">Crea sezione</button></div>

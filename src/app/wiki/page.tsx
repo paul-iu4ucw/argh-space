@@ -1,27 +1,28 @@
 import type { Metadata } from "next";
-import { TopographyBg } from "../topography-bg";
 import Link from "next/link";
 import { Clock } from "lucide-react";
-import { sectionsWithPages, recentPages } from "@/lib/db";
+import { TopographyBg } from "../topography-bg";
+import { recentPages, sectionsWithPages } from "@/lib/db";
 import { wikiBase, fmtDate } from "@/lib/wikibase";
 import { wikiOrigin } from "@/lib/seo";
 import { getLang } from "@/lib/i18n";
 import { wikiText, asWLang } from "@/lib/i18n/wiki";
 import { Icon } from "../icons";
-import { toolsSlug, toolsText } from "@/lib/i18n/tools";
-import { tools } from "@/lib/tools";
 
 export const metadata: Metadata = { alternates: { canonical: wikiOrigin }, openGraph: { type: "website", url: wikiOrigin, siteName: "A.R.G.H. Wiki", title: "Wiki A.R.G.H." } };
 
 export default async function WikiHome() {
   const base = await wikiBase();
   const lang = await getLang();
+  const T = wikiText[lang];
   const all = (await sectionsWithPages()).filter((s) => s.pages.length);
-  let list = all.filter((s) => s.lang === lang);
-  let shown = lang;
-  if (!list.length && all.length) { shown = lang === "it" ? "en" : "it"; list = all.filter((s) => s.lang === shown); }
-  const T = wikiText[lang], S = wikiText[asWLang(shown)];
+  const shown = all.some((s) => s.lang === lang) ? lang : all[0]?.lang ?? lang;
+  const S = wikiText[asWLang(shown)];
   const recent = (await recentPages(20)).filter((p) => p.section.lang === shown).slice(0, 5);
+  const cards = [
+    { href: `${base}/radiotelescopio`, icon: "telescope", ...T.hub.tele, topics: all.filter((s) => s.lang === shown && s.project === "radio").map((s) => s.title) },
+    { href: `${base}/rfi`, icon: "radio", ...T.hub.rfi, topics: all.filter((s) => s.lang === shown && s.project === "sentinel").map((s) => s.title) },
+  ];
   return (
     <>
       <section className="whero">
@@ -31,21 +32,15 @@ export default async function WikiHome() {
         <p>{T.heroText}</p>
       </section>
 
-      {list.length === 0 && <p className="meta">{T.empty}</p>}
-      {shown !== lang && list.length > 0 && <p className="flash ok">{T.fallback}</p>}
-      <div className="sgrid">
-        {list.map((s) => (
-          <Link key={s.id} href={`${base}/${s.slug}`} className="card scard">
-            <div className="chead"><div className="ico"><Icon name={s.icon} /></div><h3>{s.title}</h3></div>
-            <ul>{s.pages.slice(0, 3).map((p) => <li key={p.id}>{p.title}</li>)}</ul>
-            <span className="count">{s.pages.length} {s.pages.length === 1 ? S.page : S.pages} →</span>
+      <div className="sgrid hub">
+        {cards.map((c) => (
+          <Link key={c.href} href={c.href} className="card scard hubcard">
+            <div className="chead"><div className="ico"><Icon name={c.icon} /></div><div><h3>{c.title}</h3><small className="hubtag">{c.tag}</small></div></div>
+            <p>{c.text}</p>
+            {c.topics.length > 0 && <ul className="chips">{c.topics.map((x) => <li key={x}>{x}</li>)}</ul>}
+            <span className="count">{c.cta} →</span>
           </Link>
         ))}
-        <Link href={`${base}/${toolsSlug[lang]}`} className="card scard">
-          <div className="chead"><div className="ico"><Icon name="wrench" /></div><h3>{toolsText[lang].section}</h3></div>
-          <ul>{tools.map((t) => <li key={t.id}>{toolsText[lang].sim.short}</li>)}</ul>
-          <span className="count">{tools.length} {tools.length === 1 ? T.page : T.pages} →</span>
-        </Link>
       </div>
 
       {recent.length > 0 && (

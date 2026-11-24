@@ -4,6 +4,7 @@ import { Logo } from "../logo";
 import { LangSelect } from "../lang-select";
 import { MenuToggle } from "../menu-toggle";
 import { UserMenu } from "../user-menu";
+import { CookieSettings } from "../cookie-settings";
 import { getContent, wikiUrl } from "@/lib/i18n";
 import { currentUser } from "@/lib/user-auth";
 
@@ -44,6 +45,10 @@ export async function DashShell({ active, children }: { active: "dashboard" | "s
         </aside>
         <main className="doc">{children}</main>
       </div>
+      <footer className="foot">
+        <span>© {new Date().getFullYear()} A.R.G.H. · Astronomical Radio Ground Hub · <a href="https://github.com/paul-iu4ucw/argh-space/" target="_blank" rel="noopener noreferrer">{lang === "en" ? "Frontend source code on GitHub" : "Codice del frontend su GitHub"}</a></span>
+        <span className="flinks"><a href="/privacy">Privacy</a><a href="/cookie">Cookie</a><CookieSettings label={lang === "en" ? "Cookie settings" : "Impostazioni cookie"} /></span>
+      </footer>
     </>
   );
 }

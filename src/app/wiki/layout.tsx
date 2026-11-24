@@ -24,7 +24,7 @@ export default async function WikiLayout({ children }: { children: React.ReactNo
   const lang = await getLang();
   const T = wikiText[lang];
   const nav = (await sectionsWithPages()).map((s) => ({
-    title: s.title, slug: s.slug, icon: s.icon, lang: s.lang,
+    title: s.title, slug: s.slug, icon: s.icon, lang: s.lang, project: s.project,
     pages: s.pages.map((p) => ({ title: p.title, slug: p.slug })),
   })).filter((s) => s.pages.length).concat(toolsNav());   // "Strumenti": sezione fissa, non nel database
   const me = await currentUser();
@@ -38,7 +38,7 @@ export default async function WikiLayout({ children }: { children: React.ReactNo
     for (const p of s.pages) { const q = p.key ? t.pages.find((x) => x.key === p.key) : undefined; if (q) put(`${base}/${s.slug}/${p.slug}`, t.lang, `${base}/${t.slug}/${q.slug}`); }
   }
   Object.assign(alts, toolPaths(base));
-  const labels = Object.fromEntries((["it", "en"] as const).map((l) => [l, { search: wikiText[l].search, noResults: wikiText[l].noResults, menu: wikiText[l].menu }]));
+  const labels = Object.fromEntries((["it", "en"] as const).map((l) => [l, { search: wikiText[l].search, noResults: wikiText[l].noResults, menu: wikiText[l].menu, home: wikiText[l].home, projects: { radio: wikiText[l].hub.tele.title, sentinel: wikiText[l].hub.rfi.title } }]));
   return (
     <>
       <header className="nav">
