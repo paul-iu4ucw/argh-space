@@ -11,7 +11,7 @@ export async function AccountShell({ children }: { lang?: "it" | "en"; back?: st
   return (
     <>
       <header className="nav">
-        <a href="/" className="brand"><Logo size={36} /><span>{t.site.name}</span></a>
+        <a href="/" className="brand"><Logo size={48} /><span>{t.site.name}</span></a>
         <PublicNav userActive />
       </header>
       <main className="acctmain" lang={lang}>{children}</main>

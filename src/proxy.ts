@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 export function proxy(req: NextRequest) {
   const host = req.headers.get("host") ?? "";
   const { pathname } = req.nextUrl;
-  if (host.startsWith("wiki.") && !/^\/(admin|wiki|account|novita|dashboard|unsubscribe|privacy|cookie|_next|api)(\/|$)/.test(pathname) && !pathname.includes(".")) {
+  if (host.startsWith("wiki.") && !/^\/(admin|wiki|account|novita|dashboard|slide|unsubscribe|privacy|cookie|_next|api)(\/|$)/.test(pathname) && !pathname.includes(".")) {
     const url = req.nextUrl.clone();
     url.pathname = "/wiki" + (pathname === "/" ? "" : pathname);
     return NextResponse.rewrite(url);

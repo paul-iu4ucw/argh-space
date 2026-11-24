@@ -15,7 +15,7 @@ export async function NovitaShell({ children }: { children: React.ReactNode }) {
   return (
     <>
       <header className="nav">
-        <a href="/" className="brand"><Logo size={36} /><span>{t.site.name}</span></a>
+        <a href="/" className="brand"><Logo size={48} /><span>{t.site.name}</span></a>
         <PublicNav />
       </header>
       <main className="legal">{children}</main>

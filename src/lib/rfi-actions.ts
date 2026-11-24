@@ -53,3 +53,26 @@ export async function deleteStation(f: FormData) {
   await prisma.rfiStation.delete({ where: { id: num(f, "id") } }).catch(() => {});
   refresh();
 }
+
+// ───────── eliminazione dei rapporti ─────────
+const MAX_BULK = 5000;
+const reportsWhere = (tab: string, stationId: number) => ({ ...(tab === "valid" ? { valid: true } : tab === "invalid" ? { valid: false } : {}), ...(stationId ? { stationId } : {}) });
+const refreshReports = () => { revalidatePath("/admin/rfi", "layout"); revalidatePath("/dashboard"); };
+
+/** Elimina i rapporti scelti (anche uno solo). I segnali collegati vanno via con loro. Restituisce quanti ne ha eliminati. */
+export async function deleteReports(ids: number[]): Promise<number> {
+  await guard();
+  const clean = [...new Set((Array.isArray(ids) ? ids : []).filter((n) => Number.isInteger(n) && n > 0))].slice(0, MAX_BULK);
+  if (clean.length === 0) return 0;
+  const r = await prisma.rfiReport.deleteMany({ where: { id: { in: clean } } });
+  refreshReports();
+  return r.count;
+}
+
+/** Elimina tutti i rapporti che corrispondono al filtro della pagina (scheda e stazione), non solo i 100 visibili. */
+export async function deleteReportsMatching(tab: string, stationId: number): Promise<number> {
+  await guard();
+  const r = await prisma.rfiReport.deleteMany({ where: reportsWhere(tab, Number.isInteger(stationId) ? stationId : 0) });
+  refreshReports();
+  return r.count;
+}

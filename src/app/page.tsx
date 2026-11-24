@@ -43,7 +43,7 @@ export default async function Home() {
     <>
       <JsonLd data={ld} />
       <header className="nav">
-        <a href="#top" className="brand"><Logo size={36} /><span>{site.name}</span></a>
+        <a href="#top" className="brand"><Logo size={48} /><span>{site.name}</span></a>
         <SiteNav
           lang={lang}
           langLabel={c.ui.langLabel}

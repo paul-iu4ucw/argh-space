@@ -30,7 +30,7 @@ export async function DashShell({ active, children }: { active: "dashboard" | "s
   return (
     <>
       <header className="nav">
-        <a href="/" className="brand"><Logo size={34} /><span>A.R.G.H. <em>Dashboard</em></span></a>
+        <a href="/" className="brand"><Logo size={48} /><span>A.R.G.H. <em>Dashboard</em></span></a>
         <nav className="anav">{items}</nav>
         <MenuToggle label="Menu" />
       </header>

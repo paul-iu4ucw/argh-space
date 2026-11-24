@@ -11,6 +11,7 @@ import { STALE_MIN, stationSummary, trend } from "@/lib/rfi";
 import { HeatMap, clsColor } from "./charts";
 import { RfiBoard, type Series } from "./rfi-board";
 import { BarList } from "./bar-list";
+import { QualityInfo, type QualityText } from "./quality-info";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -35,7 +36,7 @@ const T = {
     sig: "Segnali ricorrenti", sigNote: "Frequenze che compaiono più spesso tra i segnali principali negli ultimi 30 giorni. La barra è l'occupazione media: in ambra i segnali dentro la banda protetta.", freq: "Frequenza (MHz)", times: "Rapporti", avgOcc: "Occupazione media", maxEx: "Max sopra il fondo", inBand: "In banda protetta", yes: "Sì", no: "No (margine)",
     clean: "Finestre pulite (ultime 24 ore)", cleanNote: "Periodi di classe A: i migliori momenti per osservare la riga H I.", cleanNone: "Nessun periodo di classe A nelle ultime 24 ore.",
     health: "Salute della stazione", cpu: "Temperatura CPU", uptime: "Uptime", legend: "Come leggere l'indice",
-    classes: [["A", "90–100", "Sito pulito: osservazioni H I senza restrizioni"], ["B", "75–90", "Interferenze occasionali: osservazioni possibili"], ["C", "50–75", "Interferenze frequenti: meglio pianificare"], ["D", "0–50", "Sito disturbato: osservazioni sconsigliate"]],
+    classes: [["A", "90–100", "Sito pulito: osservazioni H I senza restrizioni"], ["B", "75–90", "Interferenze occasionali: osservazioni possibili"], ["C", "50–75", "Interferenze frequenti o un segnale nella finestra H I: meglio pianificare"], ["D", "0–50", "Sito disturbato: osservazioni sconsigliate"]],
     method: "L'indice parte da 100 e perde punti per l'occupazione della banda, per quella della finestra H I e per l'aumento del rumore di fondo. Le potenze sono relative (dBFS) finché la stazione non è calibrata; la posizione è approssimata.",
     days: ["Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom"], tip: (d: string, h: number, q: number | null, n: number) => `${d} ${h}:00 · ${q === null ? "nessun dato" : `indice ${q.toFixed(0)} (${n} rapporti)`}`, locale: "it-IT", hours: "h", position: "Posizione (±1 km)",
   },
@@ -49,12 +50,48 @@ const T = {
     sig: "Recurring signals", sigNote: "Frequencies that appear most often among the main signals in the last 30 days.", freq: "Frequency (MHz)", times: "Reports", avgOcc: "Average occupancy", maxEx: "Max above floor", inBand: "In protected band", yes: "Yes", no: "No (margin)",
     clean: "Clean windows (last 24 hours)", cleanNote: "Class A periods: the best times to observe the H I line.", cleanNone: "No class A period in the last 24 hours.",
     health: "Station health", cpu: "CPU temperature", uptime: "Uptime", legend: "How to read the index",
-    classes: [["A", "90–100", "Clean site: H I observations without restrictions"], ["B", "75–90", "Occasional interference: observations possible"], ["C", "50–75", "Frequent interference: better to plan ahead"], ["D", "0–50", "Disturbed site: observations not recommended"]],
+    classes: [["A", "90–100", "Clean site: H I observations without restrictions"], ["B", "75–90", "Occasional interference: observations possible"], ["C", "50–75", "Frequent interference or a signal in the H I window: plan observations"], ["D", "0–50", "Disturbed site: observations not recommended"]],
     method: "The index starts at 100 and loses points for band occupancy, H I window occupancy and noise-floor rise. Powers are relative (dBFS) until the station is calibrated; the position is approximate.",
     days: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"], tip: (d: string, h: number, q: number | null, n: number) => `${d} ${h}:00 · ${q === null ? "no data" : `index ${q.toFixed(0)} (${n} reports)`}`, locale: "en-GB", hours: "h", position: "Position (±1 km)",
   },
 } as const;
 
+const QI: Record<"it" | "en", QualityText> = {
+  it: {
+    button: "Come si calcola l'indice", close: "Chiudi", title: "Come si calcola l'indice di qualità",
+    intro: "L'indice va da 0 a 100 e dice quanto la banda dell'idrogeno neutro (1400–1427 MHz) è libera da interferenze nell'ultimo periodo di misura di 30 minuti. Si parte da 100 e si tolgono punti per cinque motivi.",
+    head: ["Motivo", "Punti tolti"],
+    rows: [
+      ["Occupazione della banda", "Quanta parte della banda e del tempo è occupata da segnali.", "2 per ogni 1%"],
+      ["Occupazione della finestra H I", "La stessa misura entro ±500 kHz dalla riga dell'idrogeno (1420,406 MHz), la zona più importante per le osservazioni.", "3 per ogni 1%"],
+      ["Aumento del rumore di fondo", "Rispetto al valore più basso degli ultimi 7 giorni.", "4 per ogni dB oltre 0,5 dB"],
+      ["Segnali in banda", "Per ogni segnale: 0,1 per dB sopra il fondo, moltiplicato per la frazione di tempo in cui è presente.", "al massimo 10 in tutto"],
+      ["Segnali nella finestra H I", "Per ogni segnale: 2 per dB sopra il fondo (al massimo 20), moltiplicato per la frazione di tempo in cui è presente.", "al massimo 40 in tutto"],
+    ],
+    example: "Esempio: un segnale di 10 dB sempre presente nella finestra H I toglie 20 punti; lo stesso segnale altrove nella banda ne toglie 1.",
+    notes: "Contano solo i segnali presenti in almeno il 10% del tempo. I disturbi prodotti dalla stazione stessa (armoniche del clock del ricevitore, multipli di 14,4 MHz) sono esclusi. Le potenze sono relative (dBFS) finché la stazione non è calibrata.",
+    classesTitle: "Classi",
+    classes: [["A", "90–100", "Sito pulito: osservazioni H I senza restrizioni"], ["B", "75–90", "Interferenze occasionali: osservazioni possibili"], ["C", "50–75", "Interferenze frequenti o un segnale nella finestra H I: meglio pianificare"], ["D", "0–50", "Sito disturbato: osservazioni sconsigliate"]],
+  },
+  en: {
+    button: "How the index works", close: "Close", title: "How the quality index works",
+    intro: "The index runs from 0 to 100 and shows how free the neutral hydrogen band (1400–1427 MHz) is from interference over the last 30-minute measurement period. It starts at 100 and loses points for five reasons.",
+    head: ["Reason", "Points removed"],
+    rows: [
+      ["Band occupancy", "How much of the band and of the time is taken by signals.", "2 per 1%"],
+      ["H I window occupancy", "The same measure within ±500 kHz of the hydrogen line (1420.406 MHz), the most important region for observations.", "3 per 1%"],
+      ["Noise floor rise", "Compared with the lowest value of the last 7 days.", "4 per dB above 0.5 dB"],
+      ["Signals in the band", "For each signal: 0.1 per dB above the noise floor, multiplied by the fraction of time it is present.", "at most 10 in total"],
+      ["Signals in the H I window", "For each signal: 2 per dB above the noise floor (at most 20), multiplied by the fraction of time it is present.", "at most 40 in total"],
+    ],
+    example: "Example: a 10 dB signal that is always present in the H I window removes 20 points; the same signal elsewhere in the band removes 1.",
+    notes: "Only signals present at least 10% of the time count. Interference produced by the station itself (receiver clock harmonics, multiples of 14.4 MHz) is excluded. Power levels are relative (dBFS) until the station is calibrated.",
+    classesTitle: "Classes",
+    classes: [["A", "90–100", "Clean site: H I observations without restrictions"], ["B", "75–90", "Occasional interference: observations possible"], ["C", "50–75", "Frequent interference or a signal in the H I window: plan observations"], ["D", "0–50", "Disturbed site: observations not recommended"]],
+  },
+};
+
+const QC = { A: clsColor("A"), B: clsColor("B"), C: clsColor("C"), D: clsColor("D") };
 const n1 = (v: number | null | undefined, u = "") => (v === null || v === undefined ? "—" : `${v.toFixed(1)}${u}`);
 
 export default async function Dashboard({ searchParams }: { searchParams: Promise<{ station?: string; days?: string }> }) {
@@ -109,6 +146,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
             <div className="dsh-tabs">
               <a href={href(st.stationId, 7)} className={`btn small ${days === 7 ? "" : "ghost"}`}>{L.days7}</a>
               <a href={href(st.stationId, 30)} className={`btn small ${days === 30 ? "" : "ghost"}`}>{L.days30}</a>
+              <span className="qi-spacer"><QualityInfo t={QI[lang]} colors={QC} /></span>
             </div>
             <div id="andamento">
               <RfiBoard
@@ -139,7 +177,8 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
 
         <section className="dsh-card" id="legenda"><h3>{L.legend}</h3>
           <ul className="dsh-legend">{L.classes.map(([c, r, d]) => <li key={c}><span className="rfi-cls" style={{ background: clsColor(c) }}>{c}</span><b>{r}</b> {d}</li>)}</ul>
-          <p className="meta">{L.method}</p></section>
+          <p className="meta">{L.method}</p>
+          <p><QualityInfo t={QI[lang]} colors={QC} /></p></section>
       </div>
     </DashShell>
   );

@@ -42,7 +42,7 @@ export default async function WikiLayout({ children }: { children: React.ReactNo
   return (
     <>
       <header className="nav">
-        <Link href={base || "/"} className="brand"><Logo size={34} /><span>A.R.G.H. <em>Wiki</em></span></Link>
+        <Link href={base || "/"} className="brand"><Logo size={48} /><span>A.R.G.H. <em>Wiki</em></span></Link>
         <nav className="anav">
           <a href={`${process.env.NEXT_PUBLIC_SITE_URL || ""}/`}>{T.home}</a>
           <span className="msep" aria-hidden />

@@ -10,7 +10,7 @@ const GTM = process.env.NEXT_PUBLIC_GTM_ID ?? (process.env.NODE_ENV === "product
 const KEY = "cookie_consent"; // "granted" | "denied", 6 mesi
 const MAX_AGE = 60 * 60 * 24 * 180;
 // pagine che contengono token nell'indirizzo (conferme, reset) o riservate: mai verso Google
-const NO_TRACK = /^\/(admin|account|unsubscribe)(\/|$)/;
+const NO_TRACK = /^\/(admin|account|unsubscribe|slide)(\/|$)/;
 
 declare global { interface Window { dataLayer?: unknown[] } }
 function gtag(..._args: unknown[]) {
@@ -50,7 +50,7 @@ export function CookieBanner({ text, more, accept, reject, aria }: Props) {
     window.addEventListener("cookie:manage", open);
     return () => window.removeEventListener("cookie:manage", open);
   }, []);
-  if (!show || /^\/admin(\/|$)/.test(path)) return null;
+  if (!show || /^\/(admin|slide)(\/|$)/.test(path)) return null; // niente banner in area admin e sulla presentazione proiettata
 
   const choose = (v: "granted" | "denied") => {
     const was = readConsent();

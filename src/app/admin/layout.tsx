@@ -17,7 +17,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   return (
     <>
       <header className="nav">
-        <a href="/admin" className="brand"><Logo size={34} /><span>A.R.G.H. <em>Gestione</em></span></a>
+        <a href="/admin" className="brand"><Logo size={48} /><span>A.R.G.H. <em>Gestione</em></span></a>
         <nav className="anav">
           <a href="/wiki"><ExternalLink size={15} /> Vedi la wiki</a>
           <a href="/">Sito</a>
