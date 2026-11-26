@@ -12,6 +12,7 @@ import { currentUser } from "@/lib/user-auth";
 import { toolsNav, toolPaths } from "@/lib/tools";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { publicSite } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -44,9 +45,9 @@ export default async function WikiLayout({ children }: { children: React.ReactNo
       <header className="nav">
         <Link href={base || "/"} className="brand"><Logo size={48} /><span>A.R.G.H. <em>Wiki</em></span></Link>
         <nav className="anav">
-          <a href={`${process.env.NEXT_PUBLIC_SITE_URL || ""}/`}>{T.home}</a>
+          <a href={`${publicSite}/`}>{T.home}</a>
           <span className="msep" aria-hidden />
-          <a href={`${process.env.NEXT_PUBLIC_SITE_URL || ""}/dashboard`}>Dashboard</a>
+          <a href={`${publicSite}/dashboard`}>Dashboard</a>
           <a href={base || "/"} className="on" aria-current="page">Wiki</a>
           <span className="msep" aria-hidden />
           <LangSelect current={lang} label={T.language} alts={alts} home={base || "/"} />
@@ -56,9 +57,9 @@ export default async function WikiLayout({ children }: { children: React.ReactNo
       </header>
       <div className="wiki">
         <WikiNav base={base} sections={nav} defaultLang={lang} labels={labels} extra={<>
-          <a href={`${process.env.NEXT_PUBLIC_SITE_URL || ""}/`}>{T.home}</a>
+          <a href={`${publicSite}/`}>{T.home}</a>
           <span className="msep" aria-hidden />
-          <a href={`${process.env.NEXT_PUBLIC_SITE_URL || ""}/dashboard`}>Dashboard</a>
+          <a href={`${publicSite}/dashboard`}>Dashboard</a>
           <a href={base || "/"} className="on" aria-current="page">Wiki</a>
           <span className="msep" aria-hidden />
           <LangSelect current={lang} label={T.language} alts={alts} home={base || "/"} />

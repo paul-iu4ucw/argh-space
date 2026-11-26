@@ -117,7 +117,7 @@ jobs:
           CFG
 
       - name: Copia i file di deploy
-        run: tar -C deploy -czf - docker-compose.yml caddy deploy.sh import-db.sh env.example cron | ssh server "tar -xzf - -C $DIR"
+        run: tar -C deploy -czf - docker-compose.yml proxy.yml caddy deploy.sh import-db.sh env.example cron | ssh server "tar -xzf - -C $DIR"
 
       - name: Aggiorna il sito
         env:

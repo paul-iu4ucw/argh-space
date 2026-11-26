@@ -5,7 +5,7 @@ import en from "./en";
 export type Lang = "it" | "en";
 export const LANGS: Lang[] = ["it", "en"];
 export const dictionaries = { it, en };
-export const wikiUrl = process.env.NEXT_PUBLIC_WIKI_URL || "https://wiki.argh.space";
+export const wikiUrl = process.env.WIKI_URL || process.env.NEXT_PUBLIC_WIKI_URL || "https://wiki.argh.space";
 
 // Lingua scelta dall'utente (cookie) oppure, in mancanza, quella del browser (Accept-Language).
 export async function getLang(): Promise<Lang> {

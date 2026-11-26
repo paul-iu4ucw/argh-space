@@ -42,7 +42,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body>
         {children}
         {admin && <AdminFab />}
-        <CookieBanner {...t.legal.banner} />
+        <CookieBanner {...t.legal.banner} siteHost={new URL(siteUrl).hostname} />
       </body>
     </html>
   );

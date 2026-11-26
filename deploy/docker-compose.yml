@@ -5,10 +5,11 @@ x-logging: &logging
   driver: json-file
   options: { max-size: "10m", max-file: "3" }
 
-x-database-url: &database-url postgres://argh:${POSTGRES_PASSWORD:?manca POSTGRES_PASSWORD in .env}@db:5432/argh
+x-database-url: &database-url postgres://argh:${POSTGRES_PASSWORD:?manca POSTGRES_PASSWORD in .env}@argh-db:5432/argh
 
 services:
-  db:
+  # I nomi "argh-db" e "argh-web" sono volutamente unici: sul server possono convivere altri progetti
+  argh-db:
     image: postgres:17-alpine
     restart: unless-stopped
     environment:
@@ -23,7 +24,7 @@ services:
       retries: 20
     logging: *logging
 
-  app:
+  argh-web:
     image: ${IMAGE:-argh}:${TAG:-latest}
     restart: unless-stopped
     env_file: .env
@@ -35,7 +36,7 @@ services:
     # solo in locale al server: dall'esterno si passa da Caddy (o dal tuo reverse proxy)
     ports: ["127.0.0.1:${APP_PORT:-3000}:3000"]
     depends_on:
-      db: { condition: service_healthy }
+      argh-db: { condition: service_healthy }
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"]
       interval: 10s
@@ -52,7 +53,7 @@ services:
     environment:
       DATABASE_URL: *database-url
     depends_on:
-      db: { condition: service_healthy }
+      argh-db: { condition: service_healthy }
 
   # HTTPS automatico (Let's Encrypt). Si attiva con COMPOSE_PROFILES=https
   caddy:
@@ -66,7 +67,7 @@ services:
       - ./caddy:/etc/caddy:ro
       - caddy_data:/data
       - caddy_config:/config
-    depends_on: [app]
+    depends_on: [argh-web]
     logging: *logging
 
   # Sostituisce i cron di Vercel
@@ -77,7 +78,7 @@ services:
       CRON_SECRET: ${CRON_SECRET:?manca CRON_SECRET in .env}
     volumes: [./cron:/argh:ro]
     command: ["sh", "-c", "cp /argh/crontab /etc/crontabs/root && exec crond -f -l 8"]
-    depends_on: [app]
+    depends_on: [argh-web]
     logging: *logging
 
   # Copia giornaliera di database e immagini in ./backups
@@ -93,7 +94,7 @@ services:
       - media:/media:ro
     command: ["sh", "/argh/backup.sh"]
     depends_on:
-      db: { condition: service_healthy }
+      argh-db: { condition: service_healthy }
     logging: *logging
 
 volumes:

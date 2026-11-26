@@ -7,6 +7,7 @@ import { UserMenu } from "../user-menu";
 import { CookieSettings } from "../cookie-settings";
 import { getContent, wikiUrl } from "@/lib/i18n";
 import { currentUser } from "@/lib/user-auth";
+import { publicSite } from "@/lib/seo";
 
 /**
  * Struttura della dashboard: la stessa della wiki (intestazione, hamburger e pannello laterale con le voci in riga).
@@ -15,7 +16,7 @@ import { currentUser } from "@/lib/user-auth";
 export async function DashShell({ active, children }: { active: "dashboard" | "settings"; children: ReactNode }) {
   const { lang, t } = await getContent();
   const me = await currentUser().catch(() => null);
-  const site = process.env.NEXT_PUBLIC_SITE_URL || "";
+  const site = publicSite;
   const T = lang === "en" ? { dash: "RF interference", settings: "Preferences" } : { dash: "Interferenze RF", settings: "Preferenze" };
   const items = (
     <>

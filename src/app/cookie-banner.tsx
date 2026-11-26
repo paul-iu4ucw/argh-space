@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { Icon } from "./icons";
 
-type Props = { text: string; more: string; accept: string; reject: string; aria: string };
+type Props = { text: string; more: string; accept: string; reject: string; aria: string; siteHost: string };
 
 // Google Tag Manager si carica SOLO dopo il consenso. In sviluppo non si carica mai (salvo NEXT_PUBLIC_GTM_ID).
 const GTM = process.env.NEXT_PUBLIC_GTM_ID ?? (process.env.NODE_ENV === "production" ? "GTM-NFZ4HSFL" : "");
@@ -19,11 +19,10 @@ function gtag(..._args: unknown[]) {
   (window.dataLayer ??= []).push(arguments);
 }
 
-const siteHost = (() => { try { return new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://argh.space").hostname; } catch { return ""; } })();
 /** Dominio del cookie: condiviso tra argh.space e wiki.argh.space, così la scelta vale per entrambi. */
-const domainAttr = () => (siteHost && (location.hostname === siteHost || location.hostname.endsWith("." + siteHost)) ? `; domain=.${siteHost}` : "");
+const domainAttr = (siteHost: string) => (siteHost && (location.hostname === siteHost || location.hostname.endsWith("." + siteHost)) ? `; domain=.${siteHost}` : "");
 const readConsent = () => document.cookie.split("; ").find((c) => c.startsWith(KEY + "="))?.split("=")[1] as "granted" | "denied" | undefined;
-const writeConsent = (v: "granted" | "denied") => { document.cookie = `${KEY}=${v}; path=/; max-age=${MAX_AGE}; samesite=lax${domainAttr()}`; };
+const writeConsent = (v: "granted" | "denied", siteHost: string) => { document.cookie = `${KEY}=${v}; path=/; max-age=${MAX_AGE}; samesite=lax${domainAttr(siteHost)}`; };
 
 function loadGtm() {
   if (!GTM || NO_TRACK.test(location.pathname) || document.getElementById("gtm-js")) return;
@@ -38,7 +37,7 @@ function clearGoogleCookies() {
   for (const n of names) for (const d of ["", `; domain=${host}`, `; domain=${parent}`]) document.cookie = `${n}=; path=/; max-age=0${d}`;
 }
 
-export function CookieBanner({ text, more, accept, reject, aria }: Props) {
+export function CookieBanner({ text, more, accept, reject, aria, siteHost }: Props) {
   const [show, setShow] = useState(false), path = usePathname();
   useEffect(() => {
     // lo stato predefinito è "negato": nessun dato a Google finché non c'è il consenso
@@ -54,7 +53,7 @@ export function CookieBanner({ text, more, accept, reject, aria }: Props) {
 
   const choose = (v: "granted" | "denied") => {
     const was = readConsent();
-    writeConsent(v); setShow(false);
+    writeConsent(v, siteHost); setShow(false);
     if (v === "granted") { gtag("consent", "update", { analytics_storage: "granted" }); loadGtm(); }
     else if (was === "granted") { gtag("consent", "update", { analytics_storage: "denied" }); clearGoogleCookies(); location.reload(); } // ferma gli script già caricati
   };

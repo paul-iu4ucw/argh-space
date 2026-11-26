@@ -4,8 +4,8 @@ Un solo server, costo fisso. Docker Compose avvia:
 
 | Servizio | Cosa fa |
 | --- | --- |
-| `app` | il sito (Next.js) |
-| `db` | PostgreSQL 17 |
+| `argh-web` | il sito (Next.js) |
+| `argh-db` | PostgreSQL 17 |
 | `caddy` | HTTPS con certificati Let's Encrypt |
 | `cron` | email delle novità (ogni 10 minuti) e pulizia account (ogni notte) |
 | `backup` | copia giornaliera di database e immagini |
@@ -42,7 +42,23 @@ ssh root@IL_SERVER "chown deploy:deploy /opt/argh/.env && chmod 600 /opt/argh/.e
 
 Se passi da Vercel, `AUTH_SECRET` deve essere **identico** a quello di Vercel, altrimenti la 2FA e i link di disiscrizione già spediti smettono di funzionare.
 
-Se sul server c'è già un reverse proxy (nginx, Traefik…), togli `COMPOSE_PROFILES=https` e fallo puntare a `127.0.0.1:3000`. Deve inoltrare `Host`, `X-Forwarded-Host` e `X-Forwarded-Proto`, e accettare richieste di almeno 10 MB.
+**Se un Caddy in Docker di un altro progetto occupa già le porte 80 e 443**, in `.env` togli `COMPOSE_PROFILES=https` e aggiungi:
+
+```
+COMPOSE_FILE=docker-compose.yml:proxy.yml
+PROXY_NETWORK=nome_della_rete_di_quel_caddy
+```
+
+Il nome della rete si legge con `docker inspect CONTAINER_DI_CADDY --format '{{json .NetworkSettings.Networks}}'`. Poi nel Caddyfile di quel progetto aggiungi il blocco qui sotto e ricaricalo, dopo che il DNS punta al server:
+
+```
+argh.space, wiki.argh.space {
+	encode zstd gzip
+	reverse_proxy argh-web:3000
+}
+```
+
+Se invece il reverse proxy gira direttamente sul server (nginx, Traefik…), togli `COMPOSE_PROFILES=https` e fallo puntare a `127.0.0.1:3000`. Deve inoltrare `Host`, `X-Forwarded-Host` e `X-Forwarded-Proto`, e accettare richieste di almeno 10 MB.
 
 ## 3. GitHub
 
@@ -60,7 +76,9 @@ Prima di salvare `SSH_KNOWN_HOSTS`, confronta l'impronta (`ssh-keyscan … | ssh
 
 Poi aggiungi la **variabile** (non secret) `DEPLOY_ENABLED` = `true`. Finché manca, il workflow compila e prova ma non tocca il server.
 
-Facoltative: `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_WIKI_URL`, `NEXT_PUBLIC_GTM_ID` (valgono i domini argh.space). Sono incorporate nella build.
+Il dominio **non** si imposta qui ma nel `.env` del server (`SITE_URL`, `WIKI_URL`): cambiandolo basta `docker compose up -d`, senza nuova build. Vanno aggiornati anche `SITE_ADDRESSES` (o il blocco del proxy esterno) e il DNS. I testi che citano argh.space (privacy, presentazione, email di contatto) restano come sono.
+
+Facoltativa: la variabile GitHub `NEXT_PUBLIC_GTM_ID`, incorporata nella build.
 
 ## 4. Primo deploy
 
@@ -94,7 +112,7 @@ docker compose run --rm tools npm run seed:sentinel
 ```bash
 cd /opt/argh
 docker compose ps
-docker compose logs -f app
+docker compose logs -f argh-web
 docker compose logs backup cron
 ```
 
@@ -107,9 +125,9 @@ I backup stanno in `/opt/argh/backups` e durano `BACKUP_KEEP_DAYS` giorni. Sono 
 Ripristino del database:
 
 ```bash
-docker compose stop app cron
-echo 'DROP SCHEMA public CASCADE; CREATE SCHEMA public;' | docker compose exec -T db psql -U argh -d argh
-sudo cat backups/db-AAAAMMGG-HHMM.sql.gz | gunzip | docker compose exec -T db psql -v ON_ERROR_STOP=1 -U argh -d argh
+docker compose stop argh-web cron
+echo 'DROP SCHEMA public CASCADE; CREATE SCHEMA public;' | docker compose exec -T argh-db psql -U argh -d argh
+sudo cat backups/db-AAAAMMGG-HHMM.sql.gz | gunzip | docker compose exec -T argh-db psql -v ON_ERROR_STOP=1 -U argh -d argh
 docker compose up -d
 ```
 

@@ -13,19 +13,19 @@ prev_tag=$(sed -n 's/^TAG=//p' .env | tail -1)
 export IMAGE="$1" TAG="$2"
 mkdir -p backups
 
-docker compose --profile tools pull --quiet app tools
-docker compose up -d --wait db
+docker compose --profile tools pull --quiet argh-web tools
+docker compose up -d --wait argh-db
 docker compose run --rm -T tools npx prisma migrate deploy </dev/null
 
 setvar IMAGE "$IMAGE"; setvar TAG "$TAG"
 if ! docker compose up -d --remove-orphans --wait --wait-timeout 180; then
   echo "La nuova versione non risponde. Log:" >&2
-  docker compose logs --tail 50 app >&2
+  docker compose logs --tail 50 argh-web >&2
   if [ -n "$prev_tag" ] && [ "$prev_tag" != "$TAG" ]; then
     echo "Torno alla versione precedente ($prev_tag). Le migrazioni già applicate restano." >&2
     export IMAGE="$prev_image" TAG="$prev_tag"
     setvar IMAGE "$IMAGE"; setvar TAG "$TAG"
-    docker compose up -d --wait app
+    docker compose up -d --wait argh-web
   fi
   exit 1
 fi

@@ -9,13 +9,13 @@ echo "ATTENZIONE: il database di QUESTO server viene cancellato e sostituito con
 read -rp "Scrivi SI per continuare: " ok
 [ "$ok" = "SI" ] || exit 1
 
-docker compose up -d --wait db
+docker compose up -d --wait argh-db
 # scarico prima tutto: se la copia non riesce, il database del server non viene toccato
 tmp=$(mktemp); trap 'rm -f "$tmp"' EXIT
-docker compose exec -T -e SOURCE_URL db sh -c 'pg_dump --no-owner --no-privileges --schema=public "$SOURCE_URL"' </dev/null > "$tmp"
-docker compose stop app cron >/dev/null 2>&1 || true
+docker compose exec -T -e SOURCE_URL argh-db sh -c 'pg_dump --no-owner --no-privileges --schema=public "$SOURCE_URL"' </dev/null > "$tmp"
+docker compose stop argh-web cron >/dev/null 2>&1 || true
 { echo 'DROP SCHEMA IF EXISTS public CASCADE; CREATE SCHEMA public;'; sed '/^CREATE SCHEMA public;$/d' "$tmp"; } \
-  | docker compose exec -T db psql -q -v ON_ERROR_STOP=1 --single-transaction -U argh -d argh >/dev/null
+  | docker compose exec -T argh-db psql -q -v ON_ERROR_STOP=1 --single-transaction -U argh -d argh >/dev/null
 docker compose run --rm -T tools npx prisma migrate deploy </dev/null
 docker compose up -d --wait
 echo "Dati importati."

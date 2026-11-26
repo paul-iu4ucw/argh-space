@@ -1,0 +1,10 @@
+# Collega il sito alla rete di un reverse proxy già presente sul server.
+# Si attiva in .env con COMPOSE_FILE=docker-compose.yml:proxy.yml e PROXY_NETWORK=<nome della rete>
+services:
+  argh-web:
+    networks: [default, proxy]
+
+networks:
+  proxy:
+    external: true
+    name: ${PROXY_NETWORK:?manca PROXY_NETWORK in .env}

@@ -6,7 +6,7 @@ import { sectionsWithPages } from "@/lib/db";
 import { wikiBase } from "@/lib/wikibase";
 import { getLang } from "@/lib/i18n";
 import { wikiText } from "@/lib/i18n/wiki";
-import { wikiOrigin } from "@/lib/seo";
+import { publicSite, wikiOrigin } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Sentinel 1420 · Stazione di interferenze RFI",
@@ -42,7 +42,6 @@ export default async function RfiWiki() {
   const lang = await getLang(), T = wikiText[lang], c = C[lang], base = await wikiBase();
   const all = (await sectionsWithPages()).filter((x) => x.pages.length && x.project === "sentinel");
   const list = all.some((x) => x.lang === lang) ? all.filter((x) => x.lang === lang) : all;
-  const site = process.env.NEXT_PUBLIC_SITE_URL || "";
   return (
     <>
       <header className="hubh"><p className="eyebrow">{T.heroEyebrow}</p><h1>{T.hub.rfi.title}</h1><p className="hubtag big">{T.hub.rfi.tag}</p><p className="meta">{c.intro}</p></header>
@@ -63,7 +62,7 @@ export default async function RfiWiki() {
         ); })}
       </div>
       {list.length === 0 && <p className="flash ok" style={{ marginTop: 24 }}>{c.soon}</p>}
-      <p><Link className="btn" href={`${site}/dashboard`}>{c.dash}</Link></p>
+      <p><Link className="btn" href={`${publicSite}/dashboard`}>{c.dash}</Link></p>
     </>
   );
 }
