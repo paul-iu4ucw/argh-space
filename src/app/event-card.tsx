@@ -4,7 +4,7 @@ import { CalendarDays, Clock, ExternalLink, MapPin, X } from "lucide-react";
 
 export type EventData = {
   slug: string; title: string; day: string; month: string; year: string; time: string; where: string; excerpt: string; html: string; link: string;
-  first: boolean; labels: { join: string; close: string; when: string };
+  first: boolean; cover: string; labels: { join: string; close: string; when: string };
 };
 
 /** Scheda evento: cliccandola si apre una finestra con tutti i dettagli (nessun cambio pagina). */
@@ -40,6 +40,8 @@ export function EventCard({ e }: { e: EventData }) {
           <button className="evclose" onClick={close} aria-label={e.labels.close}><X size={20} /></button>
           <p className="eyebrow"><CalendarDays size={14} /> {e.day} {e.month} {e.year}</p>
           <h2>{e.title}</h2>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          {e.cover && <img className="cover" src={e.cover} alt="" loading="lazy" />}
           <p className="evmeta big">
             {e.time && <span><Clock size={16} /> {e.time}</span>}
             {e.where && <span><MapPin size={16} /> {e.where}</span>}

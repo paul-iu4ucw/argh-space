@@ -2,6 +2,8 @@ import type { NextConfig } from "next";
 
 const config: NextConfig = {
   poweredByHeader: false,
+  // Solo nella build Docker: server autonomo in .next/standalone
+  output: process.env.DOCKER_BUILD ? "standalone" : undefined,
   // Le pagine già visitate restano in cache sul client per qualche secondo: avanti/indietro e riaperture sono immediati
   experimental: { staleTimes: { dynamic: 30, static: 180 } },
   async headers() {

@@ -136,6 +136,7 @@ model Post {
   title       String
   slug        String     @unique
   content     String     @default("")
+  coverImage  String?    @map("cover_image") // /media/<nome> oppure https://…
   lang        String     @default("it") // it | en
   published   Boolean    @default(false)
   publishedAt DateTime?  @map("published_at")

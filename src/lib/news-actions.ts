@@ -39,12 +39,13 @@ export async function savePost(f: FormData) {
   const cur = await prisma.post.findUnique({ where: { id } });
   if (!cur || !title) return;
   const published = !!f.get("published"), kind = str(f, "kind") === "event" ? "event" : "news";
-  const link = str(f, "link");
+  const link = str(f, "link"), cover = str(f, "cover");
   await prisma.post.update({
     where: { id },
     data: {
       title, kind, lang: str(f, "lang") === "en" ? "en" : "it", slug: await uniqueSlug(str(f, "slug") || title, id),
       content: clean(toHtml(String(f.get("content") ?? ""))), published,
+      coverImage: /^(\/media\/[a-f0-9]{32}\.(jpg|png|webp|gif)|https:\/\/\S+)$/.test(cover) ? cover : null,
       publishedAt: published ? cur.publishedAt ?? new Date() : null,
       eventStart: kind === "event" ? fromRome(str(f, "start")) : null, eventEnd: kind === "event" ? fromRome(str(f, "end")) : null,
       location: kind === "event" ? str(f, "location") || null : null,

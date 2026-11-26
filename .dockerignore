@@ -1,0 +1,14 @@
+.git
+.github
+.next
+.vercel
+.media
+node_modules
+src/generated
+deploy
+Dockerfile
+.env
+.env*.local
+tsconfig.tsbuildinfo
+public/*.zip
+unnamed.png

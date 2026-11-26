@@ -1,0 +1,3 @@
+# minuto ora giorno mese giorno-settimana (orario UTC)
+*/10 * * * * sh /argh/call.sh news-mail
+0 3 * * * sh /argh/call.sh purge

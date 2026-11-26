@@ -34,7 +34,7 @@ export async function NewsSection({ lang }: { lang: "it" | "en" }) {
             {events.map((e, i) => (
               <Reveal key={e.id} delay={i * 80}>
                 <EventCard e={{
-                  slug: e.slug, title: e.title, first: i === 0, link: e.link ?? "", where: e.location ?? "", excerpt: excerpt(e.content, 140), html: render(e.content).html,
+                  slug: e.slug, title: e.title, cover: e.coverImage ?? "", first: i === 0, link: e.link ?? "", where: e.location ?? "", excerpt: excerpt(e.content, 140), html: render(e.content).html,
                   day: e.eventStart ? part(e.eventStart, lang, { day: "numeric" }) : "—", month: e.eventStart ? part(e.eventStart, lang, { month: "short" }) : "", year: e.eventStart ? part(e.eventStart, lang, { year: "numeric" }) : "",
                   time: e.eventStart ? part(e.eventStart, lang, { weekday: "long", hour: "2-digit", minute: "2-digit" }) + (e.eventEnd ? ` · ${t.end} ${part(e.eventEnd, lang, { hour: "2-digit", minute: "2-digit" })}` : "") : "",
                   labels: { join: t.join, close: t.close, when: "" },
@@ -52,6 +52,8 @@ export async function NewsSection({ lang }: { lang: "it" | "en" }) {
             {news.map((n, i) => (
               <Reveal key={n.id} delay={i * 100}>
                 <article className="card newscard">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  {n.coverImage && <img className="cover" src={n.coverImage} alt="" loading="lazy" />}
                   <p className="newsdate"><Newspaper size={14} /> {n.publishedAt ? part(n.publishedAt, lang, { day: "numeric", month: "long", year: "numeric" }) : ""}</p>
                   <h3><a href={`/novita/${n.slug}`}>{n.title}</a></h3>
                   <p>{excerpt(n.content, 150)}</p>

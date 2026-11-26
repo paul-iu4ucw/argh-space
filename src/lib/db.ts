@@ -9,7 +9,7 @@ function make() {
   // Su Vercel (serverless) si usa la connessione "pooled"; in locale quella diretta.
   const connectionString = process.env.DATABASE_URL_POOLED || process.env.DATABASE_URL;
   if (!connectionString) throw new Error("DATABASE_URL non impostata");
-  return new PrismaClient({ adapter: new PrismaPg({ connectionString, max: 3 }) });
+  return new PrismaClient({ adapter: new PrismaPg({ connectionString, max: Number(process.env.DB_POOL_MAX) || 3 }) });
 }
 export const prisma = g._prisma ?? (g._prisma = make());
 

@@ -1,5 +1,7 @@
 "use client";
-import { useState } from "react";
+import { useRef, useState } from "react";
+import type { EditorView } from "@tiptap/pm/view";
+import { uploadImage } from "./upload-image";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Image from "@tiptap/extension-image";
@@ -11,7 +13,7 @@ import { TableRow } from "@tiptap/extension-table-row";
 import { TableHeader } from "@tiptap/extension-table-header";
 import { TableCell } from "@tiptap/extension-table-cell";
 import { Bold, Italic, Underline, Strikethrough, Highlighter, Code, List, ListOrdered, Quote, SquareCode, Minus, Link2, Link2Off,
-  ImagePlus, Table2, AlignLeft, AlignCenter, AlignRight, Undo2, Redo2, Rows3, Columns3, Trash2, type LucideIcon } from "lucide-react";
+  ImagePlus, ImageIcon, Table2, AlignLeft, AlignCenter, AlignRight, Undo2, Redo2, Rows3, Columns3, Trash2, type LucideIcon } from "lucide-react";
 
 function B({ icon: I, title, on, active, disabled }: { icon: LucideIcon; title: string; on: () => void; active?: boolean; disabled?: boolean }) {
   return (
@@ -22,6 +24,21 @@ function B({ icon: I, title, on, active, disabled }: { icon: LucideIcon; title: 
 
 export function RichEditor({ name, initial }: { name: string; initial: string }) {
   const [html, setHtml] = useState(initial);
+  const [busy, setBusy] = useState(false);
+  const fileInput = useRef<HTMLInputElement>(null);
+  const addFiles = async (view: EditorView, files: File[], at?: number) => {
+    setBusy(true);
+    for (const f of files) {
+      try {
+        const src = await uploadImage(f);
+        const alt = window.prompt("Descrivi l'immagine in poche parole (per chi non la vede e per i motori di ricerca):", "") ?? "";
+        const node = view.state.schema.nodes.image.create({ src, alt });
+        view.dispatch(at === undefined ? view.state.tr.replaceSelectionWith(node) : view.state.tr.insert(Math.min(at, view.state.doc.content.size), node));
+      } catch (e) { window.alert((e as Error).message); }
+    }
+    setBusy(false);
+  };
+  const images = (list?: FileList | null) => Array.from(list ?? []).filter((f) => f.type.startsWith("image/"));
   const editor = useEditor({
     immediatelyRender: false,
     shouldRerenderOnTransaction: true,
@@ -33,7 +50,14 @@ export function RichEditor({ name, initial }: { name: string; initial: string })
     ],
     content: initial,
     onUpdate: ({ editor }) => setHtml(editor.getHTML()),
-    editorProps: { attributes: { class: "prose editor-area" } },
+    editorProps: {
+      attributes: { class: "prose editor-area" },
+      handlePaste: (view, e) => { const f = images(e.clipboardData?.files); if (!f.length) return false; void addFiles(view, f); return true; },
+      handleDrop: (view, e) => {
+        const f = images(e.dataTransfer?.files); if (!f.length) return false;
+        e.preventDefault(); void addFiles(view, f, view.posAtCoords({ left: e.clientX, top: e.clientY })?.pos); return true;
+      },
+    },
   });
   if (!editor) return <div className="editor"><div className="editor-area prose">…</div></div>;
   const c = () => editor.chain().focus();
@@ -75,7 +99,10 @@ export function RichEditor({ name, initial }: { name: string; initial: string })
         <span className="sep" />
         <B icon={Link2} title="Inserisci link" on={link} active={editor.isActive("link")} />
         <B icon={Link2Off} title="Rimuovi link" on={() => c().unsetLink().run()} disabled={!editor.isActive("link")} />
-        <B icon={ImagePlus} title="Immagine da URL" on={image} />
+        <B icon={ImagePlus} title="Carica immagine (o incollala / trascinala nel testo)" on={() => fileInput.current?.click()} disabled={busy} />
+        <B icon={ImageIcon} title="Immagine da URL" on={image} />
+        <input ref={fileInput} type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple hidden onChange={(e) => { void addFiles(editor.view, images(e.target.files)); e.target.value = ""; }} />
+        {busy && <span className="tbstatus">Caricamento…</span>}
         <B icon={Table2} title="Inserisci tabella" on={() => c().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()} />
         {inTable && <>
           <B icon={Rows3} title="Aggiungi riga" on={() => c().addRowAfter().run()} />

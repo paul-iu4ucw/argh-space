@@ -992,3 +992,10 @@ h1,h2,h3,h4,h5,.brand,.eyebrow,.menu,.anav,.side,.aside,.au-tabs,.dsh-tabs,.badg
 .mst-data{display:flex;align-items:center;flex-wrap:wrap;gap:6px 16px;margin:10px 0 0}
 .mst-data small{color:var(--mute);flex-basis:100%}
 .mst-acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+
+/* foto: copertine di news ed eventi */
+.coverin{display:grid;gap:8px}.coverin img{width:100%;border-radius:10px;border:1px solid var(--line)}.coverin .btn{display:inline-flex;gap:8px;align-items:center;justify-content:center}
+.cover{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:14px;border:1px solid var(--line);margin:0 0 18px}
+.newscard .cover{margin-bottom:12px}
+.npost .cover{max-width:320px;margin:0 0 10px}
+.tbstatus{align-self:center;font-size:.8rem;color:var(--mute);padding:0 6px}

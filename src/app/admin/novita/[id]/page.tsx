@@ -8,6 +8,7 @@ import { toRome } from "@/lib/rome";
 import { clean, toHtml } from "@/lib/content";
 import { RichEditor } from "../../../rich-editor";
 import { ConfirmButton } from "../../../confirm-button";
+import { CoverInput } from "../../../cover-input";
 
 export const dynamic = "force-dynamic";
 
@@ -45,6 +46,10 @@ export default async function EditPost({ params, searchParams }: { params: Promi
             <h4>Stato</h4>
             <label className="switch"><input type="checkbox" name="published" defaultChecked={p.published} /><i /><span>Pubblicata</span></label>
             <p className="meta">Le bozze non si vedono sul sito e non si possono spedire.</p>
+          </div>
+          <div className="ebox">
+            <h4>Copertina</h4>
+            <CoverInput initial={p.coverImage ?? ""} />
           </div>
           <div className="ebox">
             <h4>Tipo e lingua</h4>

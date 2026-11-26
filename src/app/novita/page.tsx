@@ -17,6 +17,8 @@ export default async function Novita() {
   const past = events.filter((p) => !upcoming.includes(p));
   const list = (items: typeof posts) => items.map((p) => (
     <article key={p.id} className="npost">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      {p.coverImage && <a href={`/novita/${p.slug}`} tabIndex={-1} aria-hidden><img className="cover" src={p.coverImage} alt="" loading="lazy" /></a>}
       <h3>{p.kind === "event" ? <CalendarDays size={17} /> : <Newspaper size={17} />} <a href={`/novita/${p.slug}`}>{p.title}</a></h3>
       <p className="meta">{p.kind === "event" && p.eventStart ? fmt(p.eventStart, lang) + (p.location ? ` · ${p.location}` : "") : p.publishedAt ? fmt(p.publishedAt, lang, false) : ""}</p>
       <p>{excerpt(p.content, 200)}</p>

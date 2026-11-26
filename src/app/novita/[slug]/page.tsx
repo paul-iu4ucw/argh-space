@@ -9,7 +9,12 @@ const find = (slug: string) => prisma.post.findFirst({ where: { slug, published:
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const p = await find((await params).slug);
-  return p ? { title: p.title, description: excerpt(p.content, 160), alternates: { canonical: `/novita/${p.slug}` } } : {};
+  if (!p) return {};
+  const description = excerpt(p.content, 160), images = p.coverImage ? [p.coverImage] : undefined;
+  return {
+    title: p.title, description, alternates: { canonical: `/novita/${p.slug}` },
+    ...(images ? { openGraph: { type: "article", title: p.title, description, images }, twitter: { card: "summary_large_image", title: p.title, description, images } } : {}),
+  };
 }
 
 export default async function Post({ params }: { params: Promise<{ slug: string }> }) {
@@ -21,6 +26,8 @@ export default async function Post({ params }: { params: Promise<{ slug: string 
       <a href="/" className="meta">{T.home}</a>
       <p className="meta">{p.kind === "event" ? T.event : T.newsOne}{p.publishedAt ? ` · ${fmt(p.publishedAt, l, false)}` : ""}</p>
       <h1>{p.title}</h1>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      {p.coverImage && <img className="cover" src={p.coverImage} alt="" />}
       {p.kind === "event" && (
         <div className="nbox">
           {p.eventStart && <p><b>{T.when}:</b> {fmt(p.eventStart, l)}{p.eventEnd ? ` → ${fmt(p.eventEnd, l)}` : ""}</p>}
