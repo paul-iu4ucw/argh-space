@@ -139,6 +139,7 @@ export default async function Home() {
           </div>
         </section>
 
+        <div className="band">
         <section id="sistema" className="wrap">
           <Head {...c.systemHead} />
           <div className="chain">
@@ -149,6 +150,7 @@ export default async function Home() {
             ))}
           </div>
         </section>
+        </div>
 
         <section className="wrap">
           <Head {...c.scienceHead} />
@@ -161,6 +163,7 @@ export default async function Home() {
           </div>
         </section>
 
+        <div className="band">
         <section className="wrap">
           <Head {...c.hiHead} />
           <div className="two even">
@@ -171,7 +174,7 @@ export default async function Home() {
                   <g stroke="#1c2547" fill="none"><path d="M40 20V180H380"/>{[0,1,2,3,4].map(i=><path key={i} d={`M${40+i*85} 180v5`}/>)}</g>
                   <path d="M40 175 C80 172 100 170 120 160 S150 120 175 120 S200 40 225 38 S250 110 265 112 S290 150 310 158 S350 172 380 174 V180 H40Z" fill="url(#hg)"/>
                   <path d="M40 175 C80 172 100 170 120 160 S150 120 175 120 S200 40 225 38 S250 110 265 112 S290 150 310 158 S350 172 380 174" fill="none" stroke="#29b6f6" strokeWidth="2.5"/>
-                  <g fill="#9aa7c7" fontSize="11" textAnchor="middle">{["-100","-50","0","+50","+100"].map((t,i)=><text key={t} x={40+i*85} y="200">{t}</text>)}<text x="210" y="216">{c.chart.axisX}</text></g>
+                  <g fill="#b8c3df" fontSize="11" textAnchor="middle">{["-100","-50","0","+50","+100"].map((t,i)=><text key={t} x={40+i*85} y="200">{t}</text>)}<text x="210" y="216">{c.chart.axisX}</text></g>
                   <text x="232" y="32" fill="#fff" fontSize="11">{c.hi.peak}</text>
                 </svg>
                 <figcaption>{c.hi.caption}</figcaption>
@@ -182,6 +185,7 @@ export default async function Home() {
             </Reveal>
           </div>
         </section>
+        </div>
 
         <section id="piano" className="wrap">
           <Head {...c.planHead} />
@@ -197,6 +201,7 @@ export default async function Home() {
           </ol>
         </section>
 
+        <div className="band">
         <section className="wrap">
           <Head {...c.impactHead} />
           <div className="grid3">
@@ -205,6 +210,7 @@ export default async function Home() {
             ))}
           </div>
         </section>
+        </div>
 
         <section id="open" className="wrap">
           <Head {...c.openHead} />

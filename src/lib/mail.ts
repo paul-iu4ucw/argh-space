@@ -28,7 +28,7 @@ const text: Record<"it" | "en", Record<MailKind, Copy>> = {
       ask: "Per attivare il tuo account e poter commentare le pagine, conferma il tuo indirizzo email.",
       button: "Apri la pagina di conferma",
       note: "Il link ti porta a una pagina del sito dove dovrai premere il pulsante “Conferma email”: serve a evitare che programmi di posta o antivirus lo aprano per te. Il link vale 24 ore.",
-      ignore: "Se non sei stato tu, ignora questo messaggio: senza conferma l'account non viene attivato.",
+      ignore: "Se non sei stato tu, ignora questo messaggio: senza conferma l'account non viene attivato e viene eliminato entro 48 ore dalla registrazione.",
     },
     reset: {
       subject: "Reimposta la tua password · A.R.G.H.",
@@ -70,7 +70,7 @@ const text: Record<"it" | "en", Record<MailKind, Copy>> = {
       ask: "To activate your account and be able to comment on pages, please confirm your email address.",
       button: "Open the confirmation page",
       note: "The link takes you to a page on the website where you will need to press the “Confirm email” button: this stops mail programs or antivirus tools from opening it for you. The link is valid for 24 hours.",
-      ignore: "If this wasn't you, just ignore this message: the account stays inactive without confirmation.",
+      ignore: "If this wasn't you, just ignore this message: without confirmation the account stays inactive and is deleted within 48 hours of signing up.",
     },
     reset: {
       subject: "Reset your password · A.R.G.H.",

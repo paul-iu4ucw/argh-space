@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { createHash, randomBytes } from "node:crypto";
 import { prisma } from "./db";
 import { sendMail } from "./mail";
+import { logged } from "./email-log";
 import { checkCode, userStore } from "./twofa";
 import { createUserSession, currentUser, hashPassword, verifyPassword } from "./user-auth";
 import { readProfile } from "./roles";
@@ -40,7 +41,7 @@ export async function requestPasswordReset(_: AccState, f: FormData): Promise<Ac
     const token = randomBytes(32).toString("hex");
     await prisma.user.update({ where: { id: u.id }, data: { resetHash: sha(token), resetExpires: new Date(Date.now() + 3600_000), resetSentAt: new Date() } });
     const L = u.locale === "en" ? "en" : "it"; // lingua scelta dall'utente nel profilo
-    try { await sendMail("reset", u.email, u.name, `${await origin()}/account/reset?t=${token}&l=${L}`, L); }
+    try { const link = `${await origin()}/account/reset?t=${token}&l=${L}`; await logged(u.id, "reset", u.email, () => sendMail("reset", u.email, u.name, link, L)); }
     catch (e) { console.error("invio email", e); await prisma.user.update({ where: { id: u.id }, data: { resetSentAt: null } }).catch(() => {}); }
   }
   return { sent: email };
@@ -116,7 +117,7 @@ export async function requestEmailChange(_: AccState, f: FormData): Promise<AccS
   }
   const token = randomBytes(32).toString("hex");
   await prisma.user.update({ where: { id: u.id }, data: { newEmail: email, newEmailHash: sha(token), newEmailExpires: new Date(Date.now() + 24 * 3600_000) } });
-  try { await sendMail("email", email, u.name, `${await origin()}/account/email?t=${token}&l=${lng(f)}`, lng(f)); }
+  try { const link = `${await origin()}/account/email?t=${token}&l=${lng(f)}`; await logged(u.id, "email_change", email, () => sendMail("email", email, u.name, link, lng(f))); }
   catch (e) { console.error("invio email", e); return { error: "mail" }; }
   return { sent: email };
 }

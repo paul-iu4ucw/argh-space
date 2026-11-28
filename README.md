@@ -112,7 +112,7 @@ Sezione fissa, definita nel codice (`src/lib/tools.ts`, testi in `src/lib/i18n/t
 
 ### Account, commenti e 2FA
 
-I lettori si registrano su `/account/register` (email confermata con un link inviato via SMTP) e accedono da `/account/login`; da `/account` attivano il 2FA. Se una pagina ha «Feedback dei lettori» attivo, selezionando un testo si può commentare quel passaggio. L'area admin ha un menu laterale: Panoramica, Wiki (gruppi e pagine), Commenti, Utenti e Sicurezza (2FA dell'admin). Il 2FA è TOTP (Google Authenticator, Aegis, Authy…) con codici di recupero; i segreti sono cifrati nel database con una chiave derivata da `AUTH_SECRET`.
+I lettori si registrano su `/account/register` (email confermata con un link inviato via SMTP; chi non conferma riceve un promemoria entro 6 ore e viene eliminato entro 48 ore, tramite il cron orario `/api/cron/purge`; da *Utenti* l'admin può rinviare l'email) e accedono da `/account/login`; da `/account` attivano il 2FA. Se una pagina ha «Feedback dei lettori» attivo, selezionando un testo si può commentare quel passaggio. L'area admin ha un menu laterale: Panoramica, Wiki (gruppi e pagine), Commenti, Utenti e Sicurezza (2FA dell'admin). Il 2FA è TOTP (Google Authenticator, Aegis, Authy…) con codici di recupero; i segreti sono cifrati nel database con una chiave derivata da `AUTH_SECRET`.
 
 ### Contenuti
 

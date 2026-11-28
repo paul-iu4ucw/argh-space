@@ -6,6 +6,9 @@ import { verifyPassword } from "./user-auth";
 import { prisma, slugify } from "./db";
 import { clean, toHtml } from "./content";
 import { dropUserPrefs } from "./dash-store";
+import { sendVerification } from "./verification";
+import { siteUrl } from "./seo";
+import { isCountry, readProfile } from "./roles";
 import { adminStore, checkCode, clearPending, readPending, setPending } from "./twofa";
 
 const RESERVED = ["admin", "wiki", "api", "privacy", "cookie", "login", "strumenti", "tools", "account", "radiotelescopio", "sentinel"];
@@ -193,6 +196,53 @@ export async function adminVerifyUser(f: FormData) {
   await guard();
   await prisma.user.update({ where: { id: num(f, "id") }, data: { emailVerifiedAt: new Date(), verifyHash: null, verifyExpires: null } }).catch(() => {});
   revUsers();
+}
+/** Rinvia l'email di conferma a un utente non ancora confermato (al massimo una al minuto). */
+export async function adminResendVerification(f: FormData) {
+  await guard();
+  const u = await prisma.user.findUnique({ where: { id: num(f, "id") } });
+  let m = "gone";
+  if (u && !u.emailVerifiedAt && !u.deleteAt) {
+    if (u.verifySentAt && Date.now() - u.verifySentAt.getTime() < 60_000) m = "wait";
+    else {
+      try { await sendVerification(u, u.locale === "en" ? "en" : "it", siteUrl, "admin_verify"); m = "sent"; }
+      catch (e) { console.error("invio email", e); m = "mail"; }
+    }
+  }
+  revUsers();
+  redirect(`/admin/utenti?m=${m}`);
+}
+export type UserEditState = { ok?: boolean; error?: string } | null;
+/** Modifica dei dati di un utente dalla sua scheda. Il consenso alle email si può solo revocare: lo dà l'interessato. */
+export async function adminUpdateUser(_: UserEditState, f: FormData): Promise<UserEditState> {
+  await guard();
+  const u = await prisma.user.findUnique({ where: { id: num(f, "id") } });
+  if (!u) return { error: "L'account non esiste più." };
+  const name = str(f, "name"), email = str(f, "email").toLowerCase();
+  if (name.length < 2 || name.length > 40) return { error: "Il nome deve avere da 2 a 40 caratteri." };
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 120) return { error: "Email non valida." };
+  const changed = email !== u.email;
+  if (changed && (await prisma.user.findUnique({ where: { email }, select: { id: true } }))) return { error: "Esiste già un account con questa email." };
+  const locale = str(f, "locale") === "en" ? "en" : "it", country = str(f, "country");
+  // chi si è registrato senza indicare il ruolo può restare senza
+  let profile: object = { locale, country: isCountry(country) ? country : null };
+  if (str(f, "role")) {
+    const p = readProfile({ role: str(f, "role"), institute: str(f, "institute"), callsign: str(f, "callsign"), club: str(f, "club"), country, locale });
+    if (typeof p === "string") return { error: p === "institute" ? "Indica l'istituto." : p === "callsign" ? "Nominativo non valido." : "Ruolo non valido." };
+    profile = p;
+  }
+  const revoke = u.mailConsent && !f.get("consent");
+  await prisma.user.update({
+    where: { id: u.id },
+    data: {
+      name, ...profile,
+      ...(revoke ? { mailConsent: false, mailConsentAt: new Date() } : {}),
+      // cambiando indirizzo, i link già spediti a quello vecchio smettono di valere
+      ...(changed ? { email, verifyHash: null, verifyExpires: null, verifySentAt: null, resetHash: null, resetExpires: null, resetSentAt: null, newEmail: null, newEmailHash: null, newEmailExpires: null } : {}),
+    },
+  });
+  revUsers();
+  return { ok: true };
 }
 /** Soccorso per chi ha perso telefono e codici di recupero. */
 export async function adminResetUser2fa(f: FormData) {

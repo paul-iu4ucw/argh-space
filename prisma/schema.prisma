@@ -74,8 +74,24 @@ model User {
   totpLockUntil     DateTime? @map("totp_lock_until")
   comments          Comment[]
   stations          RfiStation[]
+  emails            EmailLog[]
 
   @@map("users")
+}
+
+// Registro delle email di servizio inviate a un utente (le novità sono in PostMail). Mai link o token.
+model EmailLog {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kind      String // verify | reminder | admin_verify | reset | email_change
+  to        String   @map("recipient")
+  ok        Boolean  @default(true)
+  error     String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([userId, createdAt])
+  @@map("email_logs")
 }
 
 model Comment {

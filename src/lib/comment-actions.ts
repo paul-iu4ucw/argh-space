@@ -2,9 +2,9 @@
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { createHash, randomBytes } from "node:crypto";
+import { createHash } from "node:crypto";
 import { checkCode, clearPending, readPending, setPending, userStore } from "./twofa";
-import { sendVerificationEmail } from "./mail";
+import { sendVerification } from "./verification";
 import { graceEnd, purgeExpiredUsers } from "./purge";
 import { readProfile } from "./roles";
 import { prisma } from "./db";
@@ -19,21 +19,12 @@ const lng = (f: FormData) => (s(f, "lang") === "en" ? "en" : "it");
 const wait = () => new Promise((r) => setTimeout(r, 600)); // rallenta i tentativi
 const sha = (t: string) => createHash("sha256").update(t).digest("hex");
 
-/** Nuovo token di conferma (salvato solo come hash) e invio dell'email. */
-async function sendVerification(u: { id: number; name: string; email: string }, lang: "it" | "en") {
-  const token = randomBytes(32).toString("hex");
+/** Indirizzo del sito da cui arriva la richiesta, per il link nell'email. */
+async function origin() {
   const h = await headers();
   const host = h.get("x-forwarded-host") ?? h.get("host") ?? "";
   const proto = h.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
-  const link = `${proto}://${host}/account/verify?t=${token}&l=${lang}`;
-  await prisma.user.update({ where: { id: u.id }, data: { verifyHash: sha(token), verifyExpires: new Date(Date.now() + 24 * 3600_000), verifySentAt: new Date() } });
-  try {
-    await sendVerificationEmail(u.email, u.name, link, lang);
-  } catch (e) {
-    // invio fallito: si azzera l'attesa di un minuto, così si può riprovare subito
-    await prisma.user.update({ where: { id: u.id }, data: { verifySentAt: null } }).catch(() => {});
-    throw e;
-  }
+  return `${proto}://${host}`;
 }
 
 export async function registerUser(_: AuthState, f: FormData): Promise<AuthState> {
@@ -54,9 +45,9 @@ export async function registerUser(_: AuthState, f: FormData): Promise<AuthState
   // un account non ancora confermato può essere ripreso: si aggiornano i dati e si rinvia l'email
   if (old?.verifySentAt && Date.now() - old.verifySentAt.getTime() < 60_000) return { error: "wait" };
   const u = old
-    ? await prisma.user.update({ where: { id: old.id }, data: { name, passwordHash: hashPassword(pw), ...consentData } })
+    ? await prisma.user.update({ where: { id: old.id }, data: { name, passwordHash: hashPassword(pw), createdAt: new Date(), ...consentData } }) // nuova registrazione: le 48 ore ripartono
     : await prisma.user.create({ data: { name, email, passwordHash: hashPassword(pw), ...consentData } });
-  try { await sendVerification(u, prof.locale); } catch (e) { console.error("invio email", e); return { error: "mail" }; }
+  try { await sendVerification(u, prof.locale, await origin()); } catch (e) { console.error("invio email", e); return { error: "mail" }; }
   return { sent: email };
 }
 
@@ -93,7 +84,7 @@ export async function resendVerification(_: AuthState, f: FormData): Promise<Aut
   const u = await prisma.user.findUnique({ where: { email } });
   if (!u || u.emailVerifiedAt) return { sent: email }; // non si rivela se l'indirizzo esiste
   if (u.verifySentAt && Date.now() - u.verifySentAt.getTime() < 60_000) return { error: "wait" };
-  try { await sendVerification(u, u.locale === "en" ? "en" : "it"); } catch (e) { console.error("invio email", e); return { error: "mail" }; }
+  try { await sendVerification(u, u.locale === "en" ? "en" : "it", await origin()); } catch (e) { console.error("invio email", e); return { error: "mail" }; }
   return { sent: email };
 }
 
